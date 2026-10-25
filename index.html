@@ -49,11 +49,7 @@
 [hidden]{display:none!important}
 html,body{margin:0}
 body{
-  background:
-    radial-gradient(900px 420px at 10% -120px,color-mix(in srgb,var(--you) 9%,transparent),transparent 70%),
-    radial-gradient(900px 420px at 95% -120px,color-mix(in srgb,var(--ghost) 9%,transparent),transparent 70%),
-    var(--bg);
-  color:var(--ink);font:15px/1.55 var(--f-body);-webkit-font-smoothing:antialiased;
+  background:var(--bg);color:var(--ink);font:15px/1.55 var(--f-body);-webkit-font-smoothing:antialiased;
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 56px;min-height:100vh}
 .wrap{max-width:920px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
 a{color:var(--you);text-underline-offset:3px;text-decoration-thickness:1px}
@@ -62,13 +58,14 @@ button,input,select{font:inherit;color:inherit}
 
 header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:0 4px 4px}
 .brand{display:flex;align-items:center;gap:12px;min-width:0}
-.logo{width:36px;height:36px;flex:none;filter:drop-shadow(0 6px 14px color-mix(in srgb,var(--ghost) 35%,transparent))}
+.logo{width:36px;height:36px;flex:none}
 .logo .body{fill:var(--ghost)}.logo .eye{fill:var(--surface)}
 .brand h1{font:800 21px/1.1 var(--f-display);margin:0;letter-spacing:-.03em;white-space:nowrap}
 .brand h1 b{color:var(--ghost);font-weight:800}
 .brand span{display:block;color:var(--muted);font-size:13px;margin-top:2px}
+.hright{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .record{display:flex;gap:6px;align-items:center}
-.record i{font:700 13px/1 var(--f-display);font-style:normal;font-variant-numeric:tabular-nums;padding:7px 10px;border-radius:999px;background:var(--surface);border:1px solid var(--line);color:var(--muted);box-shadow:var(--shadow)}
+.record i{font:700 13px/1 var(--f-display);font-style:normal;font-variant-numeric:tabular-nums;padding:7px 10px;border-radius:999px;background:var(--surface);border:1px solid var(--line);color:var(--muted)}
 .record .w{color:var(--ok)}.record .l{color:var(--bad)}
 
 .panel{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:24px;display:flex;flex-direction:column;gap:20px;box-shadow:var(--shadow)}
@@ -120,7 +117,7 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:44px;padding:0 18px;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:12px;font-weight:700;font-size:14px;text-decoration:none;cursor:pointer;white-space:nowrap;transition:transform .12s,background .15s,border-color .15s,box-shadow .15s,filter .15s}
 .btn:hover{border-color:var(--line-strong);background:var(--surface-2)}
 .btn:active{transform:translateY(1px)}
-.btn.primary{height:50px;padding:0 26px;background:var(--you);border-color:transparent;color:var(--on-you);font-size:15px;font-weight:800;letter-spacing:-.01em;box-shadow:0 10px 24px -12px var(--you)}
+.btn.primary{height:50px;padding:0 26px;background:var(--you);border-color:transparent;color:var(--on-you);font-size:15px;font-weight:800;letter-spacing:-.01em}
 .btn.primary:hover{background:var(--you);filter:brightness(1.07)}
 .btn.danger{color:var(--bad)}
 .btn.danger:hover{border-color:color-mix(in srgb,var(--bad) 45%,var(--line));background:color-mix(in srgb,var(--bad) 7%,var(--surface))}
@@ -139,7 +136,7 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
 .clock .t{font:800 clamp(56px,13vw,88px)/1 var(--f-display);font-variant-numeric:tabular-nums;letter-spacing:-.04em}
 .clock .sub{font:600 13px/1 var(--f-body);color:var(--muted)}
 .bar{height:6px;background:var(--surface-2);border:1px solid var(--line);border-radius:999px;overflow:hidden;width:100%;max-width:440px}
-.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--you),var(--ghost));border-radius:999px;width:0;transition:width .5s linear}
+.bar i{display:block;height:100%;background:var(--you);border-radius:999px;width:0;transition:width .5s linear}
 
 .lanes{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .lane{border-radius:14px;padding:16px 18px;display:flex;flex-direction:column;gap:12px;min-width:0;border:1px solid var(--line);background:var(--surface-2);position:relative;overflow:hidden}
@@ -203,49 +200,117 @@ td.p a:hover{text-decoration:underline}
   <header>
     <div class="brand">
       <svg class="logo" viewBox="0 0 32 32" aria-hidden="true"><path class="body" d="M16 3C9.4 3 5 7.8 5 14v14.5l3.7-2.7 3.6 2.7 3.7-2.7 3.7 2.7 3.6-2.7 3.7 2.7V14C27 7.8 22.6 3 16 3z"/><circle class="eye" cx="12" cy="14" r="2.2"/><circle class="eye" cx="20" cy="14" r="2.2"/></svg>
-      <div><h1>CF <b>Ghost</b> Duel</h1><span>дуэль с призраком реального участника</span></div>
+      <div><h1>CF <b>Ghost</b> Duel</h1><span data-i18n="tagline"></span></div>
     </div>
-    <div class="record" id="record"></div>
+    <div class="hright">
+      <div class="record" id="record"></div>
+      <div class="seg" id="lang" role="group" data-i18n-aria="langAria"><button type="button" data-lang="ru">RU</button><button type="button" data-lang="en">EN</button></div>
+    </div>
   </header>
 
   <section class="panel" id="setup">
-    <h2>Новая дуэль</h2>
+    <h2 data-i18n="newDuel"></h2>
     <div class="grid">
-      <div class="field"><label for="handle">Твой хэндл</label><input id="handle" placeholder="tourist" autocomplete="off" spellcheck="false"></div>
-      <div class="field"><label for="rmin">Рейтинг задачи</label>
-        <div class="range"><input id="rmin" type="number" inputmode="numeric" min="800" max="3500" step="100" aria-label="Рейтинг задачи от"><span>—</span><input id="rmax" type="number" inputmode="numeric" min="800" max="3500" step="100" aria-label="Рейтинг задачи до"></div></div>
-      <div class="field"><label for="bot">Уровень соперника</label>
-        <div class="stepper"><button type="button" data-step="-50" aria-label="Уменьшить на 50">−</button><input id="bot" type="number" inputmode="numeric" min="400" max="3800" step="50"><button type="button" data-step="50" aria-label="Увеличить на 50">+</button></div></div>
+      <div class="field"><label for="handle" data-i18n="handle"></label><input id="handle" placeholder="tourist" autocomplete="off" spellcheck="false"></div>
+      <div class="field"><label for="rmin" data-i18n="probRating"></label>
+        <div class="range"><input id="rmin" type="number" inputmode="numeric" min="800" max="3500" step="100" data-i18n-aria="ratingFrom"><span>—</span><input id="rmax" type="number" inputmode="numeric" min="800" max="3500" step="100" data-i18n-aria="ratingTo"></div></div>
+      <div class="field"><label for="bot" data-i18n="oppLevel"></label>
+        <div class="stepper"><button type="button" data-step="-50" data-i18n-aria="dec50">−</button><input id="bot" type="number" inputmode="numeric" min="400" max="3800" step="50"><button type="button" data-step="50" data-i18n-aria="inc50">+</button></div></div>
     </div>
-    <div class="field"><span class="lbl" id="limit-lbl">Лимит времени</span>
-      <div class="seg wide" id="limit" role="group" aria-labelledby="limit-lbl"><button type="button" data-limit="15">15 мин</button><button type="button" data-limit="30">30 мин</button><button type="button" data-limit="45">45 мин</button><button type="button" data-limit="60">1 час</button><button type="button" data-limit="90">1.5 ч</button><button type="button" data-limit="120">2 часа</button></div></div>
-    <label class="switch"><input type="checkbox" id="adaptive" role="switch"><span><b>Подстраивать уровень соперника</b><small>+50 за твою победу, −50 за поражение</small></span></label>
+    <div class="field"><span class="lbl" id="limit-lbl" data-i18n="limitLbl"></span>
+      <div class="seg wide" id="limit" role="group" aria-labelledby="limit-lbl"><button type="button" data-limit="5">5</button><button type="button" data-limit="10">10</button><button type="button" data-limit="15">15</button><button type="button" data-limit="30">30</button><button type="button" data-limit="45">45</button><button type="button" data-limit="60">60</button><button type="button" data-limit="90">90</button><button type="button" data-limit="120">120</button></div></div>
+    <label class="switch"><input type="checkbox" id="adaptive" role="switch"><span><b data-i18n="adaptive"></b><small data-i18n="adaptiveSub"></small></span></label>
     <div class="field">
-      <div class="tagrow"><span class="lbl">Теги</span>
-        <div class="seg" role="group" aria-label="Как совмещать теги"><button type="button" id="mode-all">все сразу</button><button type="button" id="mode-any">любой из</button></div></div>
+      <div class="tagrow"><span class="lbl" data-i18n="tags"></span>
+        <div class="seg" role="group" data-i18n-aria="tagModeAria"><button type="button" id="mode-all" data-i18n="modeAll"></button><button type="button" id="mode-any" data-i18n="modeAny"></button></div></div>
       <div class="tags" id="tags"></div>
     </div>
-    <div class="actions"><button class="btn primary" id="go">Найти соперника</button><p class="log" id="log"></p></div>
-    <p class="hint">Соперник — запись реального участника того контеста, откуда задача, с рейтингом около выбранного уровня. Его попытки и время решения воспроизводятся по таблице результатов. Если у контеста нет рейтинговых данных, играет синтетический соперник.</p>
+    <div class="actions"><button class="btn primary" id="go" data-i18n="find"></button><p class="log" id="log"></p></div>
+    <p class="hint" data-i18n="setupHint"></p>
   </section>
 
   <section class="panel" id="arena" hidden></section>
 
   <section class="panel" id="hist">
-    <h2>История</h2>
+    <h2 data-i18n="history"></h2>
     <div id="histBody"></div>
   </section>
 </div>
 
 <script>
 const TAGS=["implementation","math","greedy","dp","data structures","brute force","constructive algorithms","graphs","sortings","binary search","dfs and similar","trees","strings","number theory","combinatorics","two pointers","bitmasks","geometry","dsu","shortest paths","probabilities","divide and conquer","hashing","games","interactive","matrices"];
+// Русские названия тегов как в русском интерфейсе Codeforces
+const TAG_RU={"implementation":"реализация","math":"математика","greedy":"жадные алгоритмы","dp":"дп","data structures":"структуры данных","brute force":"перебор","constructive algorithms":"конструктив","graphs":"графы","sortings":"сортировки","binary search":"бинарный поиск","dfs and similar":"поиск в глубину и подобное","trees":"деревья","strings":"строки","number theory":"теория чисел","combinatorics":"комбинаторика","two pointers":"два указателя","bitmasks":"битмаски","geometry":"геометрия","dsu":"снм","shortest paths":"кратчайшие пути","probabilities":"теория вероятностей","divide and conquer":"разделяй и властвуй","hashing":"хэши","games":"игры","interactive":"интерактив","matrices":"матрицы","*special":"*особая задача","chinese remainder theorem":"китайская теорема об остатках","expression parsing":"разбор выражений","fft":"быстрое преобразование Фурье","flows":"потоки","graph matchings":"паросочетания","schedules":"расписания","string suffix structures":"строковые суфф. структуры","ternary search":"тернарный поиск"};
+const I18N={
+  ru:{
+    tagline:"дуэль с призраком реального участника",langAria:"Язык",
+    newDuel:"Новая дуэль",handle:"Твой хэндл",probRating:"Рейтинг задачи",ratingFrom:"Рейтинг задачи от",ratingTo:"Рейтинг задачи до",
+    oppLevel:"Уровень соперника",dec50:"Уменьшить на 50",inc50:"Увеличить на 50",limitLbl:"Лимит времени, минуты",
+    adaptive:"Подстраивать уровень соперника",adaptiveSub:"+50 за твою победу, −50 за поражение",
+    tags:"Теги",tagModeAria:"Как совмещать теги",modeAll:"все сразу",modeAny:"любой из",find:"Найти соперника",
+    setupHint:"Соперник — запись реального участника того контеста, откуда задача, с рейтингом около выбранного уровня. Его попытки и время решения воспроизводятся по таблице результатов. Если у контеста нет рейтинговых данных, играет синтетический соперник.",
+    history:"История",
+    needHandle:"Введи свой хэндл на Codeforces",loadingProblems:"Загружаю задачи Codeforces",loadingSolved:"Смотрю, что ты уже решил",
+    noProblems:"Под эти фильтры нет нерешённых задач. Расширь диапазон или убери теги.",searching:"Ищу соперника среди участников контеста",
+    errTimeout:"Codeforces не ответил вовремя",errCf:"Codeforces вернул ошибку",errNet:v=>`Запрос к Codeforces не прошёл (${v.method})`,
+    errHandle:v=>`Не получилось загрузить посылки ${v.handle}. Проверь хэндл.`,
+    reason_unrated:"контест нерейтинговый",reason_few:"в контесте мало участников твоего уровня",reason_norows:"нет строк в таблице",
+    reason_apiErr:v=>`${v.step} для контеста ${v.id}: ${v.msg}`,
+    found:"Соперник найден",you:"ты",ghost:"призрак",synthetic:"синтетический",whyNot:"Почему не призрак:",
+    readyHint:v=>`Задача рейтинга ${v.rating}, лимит ${v.limit}. Условие откроется после старта. Отправляй решение со своего аккаунта на Codeforces, страница сама увидит вердикт.`,
+    start:"Старт",another:"Другая задача",openProblem:"Открыть задачу ↗",
+    testing:"тестируется",rejected:"не прошло",gSolving:"решает",gSubmitted:"отправил решение",solved:"решил",notSolved:"не решил",
+    polling:"посылки проверяются каждые 6 секунд",noSubs:"посылок пока нет",writing:"пишет код",tagsHidden:"теги откроются после дуэли",
+    laneYou:"Ты",laneOpp:"Соперник",of:v=>`из ${v.limit}`,waiting:"соперник сдал, жду вердикты твоих посылок",
+    checkNow:"Проверить посылки сейчас",surrender:"Сдаться",
+    titleWon:"Победа",titleLost:"Поражение",titleGaveUp:"Сдался",titleDraw:"Ничья: никто не решил",
+    revealGhost:v=>`Это был ${v.link} с рейтингом ${v.rating} на ${v.contestName}, итоговое место ${v.rank}. `+(v.solveSec!=null?`Задачу он сдал на ${fmt(v.realAc)} от начала контеста. Предыдущий AC был на ${fmt(v.prevAc)}, поэтому его время на эту задачу считается как ${fmt(v.solveSec)}.`:`На контесте он эту задачу не решил.`)+` Из ${v.field} участников контеста его уровня задачу решили ${v.fieldSolved}.`,
+    revealSynth:v=>`Играл синтетический соперник уровня ${v.rating}: ${v.reason}. Его время сгенерировано по разнице рейтинга задачи и соперника.`,
+    nextDuel:"Следующая дуэль",toSettings:"К настройкам",
+    histEmpty:"Здесь появятся сыгранные дуэли: задача, результат и кто был призраком.",
+    hDate:"Дата",hProblem:"Задача",hResult:"Итог",hTime:"Время",hOpp:"Соперник",
+    bWon:"победа",bLost:"поражение",bDraw:"ничья",gaveUpShort:"сдался",bot:v=>`бот ${v.rating}`
+  },
+  en:{
+    tagline:"duel against the ghost of a real contestant",langAria:"Language",
+    newDuel:"New duel",handle:"Your handle",probRating:"Problem rating",ratingFrom:"Problem rating from",ratingTo:"Problem rating to",
+    oppLevel:"Opponent level",dec50:"Decrease by 50",inc50:"Increase by 50",limitLbl:"Time limit, minutes",
+    adaptive:"Adaptive opponent level",adaptiveSub:"+50 when you win, −50 when you lose",
+    tags:"Tags",tagModeAria:"How to combine tags",modeAll:"all of",modeAny:"any of",find:"Find opponent",
+    setupHint:"Your opponent is a recording of a real contestant from the contest the problem comes from, rated close to the level you chose. Their attempts and solve time are replayed from the contest standings. If the contest has no rating data, a synthetic opponent plays instead.",
+    history:"History",
+    needHandle:"Enter your Codeforces handle",loadingProblems:"Loading Codeforces problems",loadingSolved:"Checking what you have already solved",
+    noProblems:"No unsolved problems match these filters. Widen the rating range or remove some tags.",searching:"Looking for an opponent among the contestants",
+    errTimeout:"Codeforces did not respond in time",errCf:"Codeforces returned an error",errNet:v=>`Request to Codeforces failed (${v.method})`,
+    errHandle:v=>`Couldn't load submissions for ${v.handle}. Check the handle.`,
+    reason_unrated:"the contest is unrated",reason_few:"too few contestants at your level in this contest",reason_norows:"no rows in the standings",
+    reason_apiErr:v=>`${v.step} for contest ${v.id}: ${v.msg}`,
+    found:"Opponent found",you:"you",ghost:"ghost",synthetic:"synthetic",whyNot:"Why not a ghost:",
+    readyHint:v=>`Problem rated ${v.rating}, time limit ${v.limit}. The statement opens once you start. Submit from your own Codeforces account and this page will pick up the verdict.`,
+    start:"Start",another:"Another problem",openProblem:"Open problem ↗",
+    testing:"testing",rejected:"rejected",gSolving:"solving",gSubmitted:"submitted",solved:"solved",notSolved:"not solved",
+    polling:"checking submissions every 6 seconds",noSubs:"no submissions yet",writing:"writing code",tagsHidden:"tags are revealed after the duel",
+    laneYou:"You",laneOpp:"Opponent",of:v=>`of ${v.limit}`,waiting:"opponent submitted, waiting for your verdicts",
+    checkNow:"Check submissions now",surrender:"Give up",
+    titleWon:"Victory",titleLost:"Defeat",titleGaveUp:"Gave up",titleDraw:"Draw: nobody solved it",
+    revealGhost:v=>`It was ${v.link}, rated ${v.rating}, at ${v.contestName}, final rank ${v.rank}. `+(v.solveSec!=null?`They got AC at ${fmt(v.realAc)} into the contest. Their previous AC was at ${fmt(v.prevAc)}, so their time on this problem counts as ${fmt(v.solveSec)}.`:`They did not solve this problem during the contest.`)+` Of ${v.field} contestants at their level, ${v.fieldSolved} solved it.`,
+    revealSynth:v=>`A synthetic opponent rated ${v.rating} played: ${v.reason}. Its timing was generated from the gap between the problem rating and the opponent level.`,
+    nextDuel:"Next duel",toSettings:"Back to settings",
+    histEmpty:"Finished duels will show up here: the problem, the result and who the ghost was.",
+    hDate:"Date",hProblem:"Problem",hResult:"Result",hTime:"Time",hOpp:"Opponent",
+    bWon:"win",bLost:"loss",bDraw:"draw",gaveUpShort:"gave up",bot:v=>`bot ${v.rating}`
+  }
+};
 const $=s=>document.querySelector(s);
 const LS={get(k,d){try{const v=localStorage.getItem("cfgd."+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem("cfgd."+k,JSON.stringify(v))}catch(e){}}};
-let settings=Object.assign({handle:"",rmin:1200,rmax:1600,bot:1500,limit:45,adaptive:true,tags:[],tagMode:"any"},LS.get("settings",{}));
+let settings=Object.assign({handle:"",rmin:1200,rmax:1600,bot:1500,limit:45,adaptive:true,tags:[],tagMode:"any",lang:/^ru/i.test(navigator.language||"")?"ru":"en"},LS.get("settings",{}));
 let history=LS.get("history",[]);
 let duel=LS.get("duel",null);
 let problemsCache=null,solvedCache=null,polling=false,lastPollAt=0,lastPollTry=0,busy=false;
 
+function tr(k,v={}){const x=(I18N[settings.lang]||I18N.ru)[k];return typeof x==="function"?x(v):x}
+const tagName=x=>settings.lang==="ru"&&TAG_RU[x]||x;
+const reasonText=r=>typeof r==="string"?r:tr("reason_"+r.k,r);
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const rand=n=>Math.floor(Math.random()*n);
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
@@ -258,18 +323,18 @@ let lastCall=0,chain=Promise.resolve();
 async function request(method,params){
   const q=new URLSearchParams(params).toString();
   const url="https://codeforces.com/api/"+method+(q?"?"+q:"");
-  const ctrl=new AbortController(),t=setTimeout(()=>ctrl.abort(),90000);
+  const ctrl=new AbortController(),timer=setTimeout(()=>ctrl.abort(),90000);
   let d;
   try{
     const r=await fetch(url,{credentials:"omit",cache:"no-store",signal:ctrl.signal});
     d=await r.json();
   }catch(e){
     console.warn("CF API: запрос не прошёл",url,e);
-    throw new Error(e.name==="AbortError"?"Codeforces не ответил вовремя":"NET");
-  }finally{clearTimeout(t)}
+    throw new Error(e.name==="AbortError"?tr("errTimeout"):"NET");
+  }finally{clearTimeout(timer)}
   if(d&&d.status==="OK")return d.result;
   console.warn("CF API:",url,d);
-  throw new Error((d&&d.comment)||"Codeforces вернул ошибку");
+  throw new Error((d&&d.comment)||tr("errCf"));
 }
 function cf(method,params={}){
   const p=chain.then(async()=>{
@@ -280,7 +345,7 @@ function cf(method,params={}){
       try{return await request(method,params)}
       catch(e){
         const retry=(e.message==="NET"||/limit/i.test(e.message))&&attempt<2;
-        if(!retry)throw e.message==="NET"?new Error("Запрос к Codeforces не прошёл ("+method+")"):e;
+        if(!retry)throw e.message==="NET"?new Error(tr("errNet",{method})):e;
         await sleep(2500);
       }
     }
@@ -299,7 +364,7 @@ async function loadSolved(handle){
   if(solvedCache&&solvedCache.handle===handle&&Date.now()-solvedCache.at<60000)return solvedCache;
   let subs;
   try{subs=await cf("user.status",{handle})}
-  catch(e){throw new Error("Не получилось загрузить посылки "+handle+". Проверь хэндл.")}
+  catch(e){throw new Error(tr("errHandle",{handle}))}
   const solved=new Set();let lastId=0;
   for(const s of subs){if(s.id>lastId)lastId=s.id;if(s.verdict==="OK")solved.add(key(s.problem))}
   solvedCache={handle,solved,lastId,at:Date.now()};
@@ -325,19 +390,19 @@ async function buildGhost(p,R,limit){
   let step="contest.ratingChanges";
   try{
     const changes=await cf(step,{contestId:p.contestId});
-    if(!changes.length)return synthetic(p,R,limit,"контест нерейтинговый");
+    if(!changes.length)return synthetic(p,R,limit,{k:"unrated"});
     const ratingOf=new Map(changes.filter(x=>x.oldRating>0).map(x=>[x.handle,x.oldRating]));
-    if([...ratingOf.values()].filter(r=>Math.abs(r-R)<=350).length<3)return synthetic(p,R,limit,"в контесте мало участников твоего уровня");
+    if([...ratingOf.values()].filter(r=>Math.abs(r-R)<=350).length<3)return synthetic(p,R,limit,{k:"few"});
     step="contest.standings";
     // Таблицу обычного контеста CF отдаёт только целиком: с handles и другими параметрами запрос отклоняется
     const st=await cf(step,{contestId:p.contestId});
     const pi=st.problems.findIndex(q=>q.index===p.index);
     const hOf=r=>r.party.members[0].handle;
     const rows=st.rows.filter(r=>r.party.participantType==="CONTESTANT"&&ratingOf.has(hOf(r)));
-    if(pi<0||!rows.length)return synthetic(p,R,limit,"нет строк в таблице");
+    if(pi<0||!rows.length)return synthetic(p,R,limit,{k:"norows"});
     let pool=[];
     for(const d of [100,200,350]){pool=rows.filter(r=>Math.abs(ratingOf.get(hOf(r))-R)<=d);if(pool.length>=15)break}
-    if(pool.length<3)return synthetic(p,R,limit,"в контесте мало участников твоего уровня");
+    if(pool.length<3)return synthetic(p,R,limit,{k:"few"});
     const solvedOf=r=>{const q=r.problemResults[pi];return q.points>0&&q.bestSubmissionTimeSeconds!=null};
     const row=pool[rand(pool.length)];
     const handle=hOf(row);
@@ -353,9 +418,9 @@ async function buildGhost(p,R,limit){
     const rejects=Array.from({length:Math.min(pr.rejectedAttemptCount||0,8)},()=>Math.round(span*(0.3+0.65*Math.random()))).sort((a,b)=>a-b);
     return {type:"ghost",handle,rating:ratingOf.get(handle),contestName:st.contest.name,contestId:p.contestId,rank:row.rank,solveSec,realAc,prevAc:ok?prev:null,rejects,field:pool.length,fieldSolved:pool.filter(solvedOf).length};
   }catch(e){
-    if(/unavailable/i.test(e.message))return synthetic(p,R,limit,"контест нерейтинговый");
+    if(/unavailable/i.test(e.message))return synthetic(p,R,limit,{k:"unrated"});
     console.warn("buildGhost",p.contestId+p.index,step,e);
-    return synthetic(p,R,limit,`${step} для контеста ${p.contestId}: ${e.message}`);
+    return synthetic(p,R,limit,{k:"apiErr",step,id:p.contestId,msg:e.message});
   }
 }
 
@@ -380,7 +445,7 @@ function renderLimit(){
   document.querySelectorAll("[data-limit]").forEach(b=>b.setAttribute("aria-pressed",+b.dataset.limit===settings.limit));
 }
 function renderTags(){
-  $("#tags").innerHTML=TAGS.map(t=>`<button type="button" class="chip" data-tag="${esc(t)}" aria-pressed="${settings.tags.includes(t)}">${esc(t)}</button>`).join("");
+  $("#tags").innerHTML=TAGS.map(t=>`<button type="button" class="chip" data-tag="${esc(t)}" aria-pressed="${settings.tags.includes(t)}">${esc(tagName(t))}</button>`).join("");
   $("#mode-all").setAttribute("aria-pressed",settings.tagMode==="all");
   $("#mode-any").setAttribute("aria-pressed",settings.tagMode==="any");
 }
@@ -388,16 +453,16 @@ function renderTags(){
 async function search(){
   if(busy)return;
   readForm();
-  if(!settings.handle){log("Введи свой хэндл на Codeforces",true);$("#handle").focus();return}
+  if(!settings.handle){log(tr("needHandle"),true);$("#handle").focus();return}
   busy=true;$("#go").disabled=true;
   try{
-    log("Загружаю задачи Codeforces");
+    log(tr("loadingProblems"));
     const probs=await loadProblems();
-    log("Смотрю, что ты уже решил");
+    log(tr("loadingSolved"));
     const info=await loadSolved(settings.handle);
     const cand=probs.filter(p=>p.rating>=settings.rmin&&p.rating<=settings.rmax&&!info.solved.has(key(p))&&tagOk(p));
-    if(!cand.length)throw new Error("Под эти фильтры нет нерешённых задач. Расширь диапазон или убери теги.");
-    log("Ищу соперника среди участников контеста");
+    if(!cand.length)throw new Error(tr("noProblems"));
+    log(tr("searching"));
     // Если у контеста нет рейтинговых данных, пробуем ещё пару задач, прежде чем звать синтетического соперника
     let p,ghost;
     for(let i=0;i<3;i++){
@@ -458,7 +523,7 @@ function closeDuel(){duel=null;saveDuel();render()}
 
 function verdictCell(s){
   if(s.v==="OK")return `<span class="v-ok">Accepted</span>`;
-  if(s.v==="TESTING")return `<span class="v-wait">тестируется</span>`;
+  if(s.v==="TESTING")return `<span class="v-wait">${tr("testing")}</span>`;
   const map={WRONG_ANSWER:"Wrong answer",TIME_LIMIT_EXCEEDED:"Time limit",MEMORY_LIMIT_EXCEEDED:"Memory limit",RUNTIME_ERROR:"Runtime error",COMPILATION_ERROR:"Compilation error",IDLENESS_LIMIT_EXCEEDED:"Idleness limit"};
   const name=map[s.v]||s.v.replace(/_/g," ").toLowerCase();
   const test=s.v!=="COMPILATION_ERROR"&&s.test!=null?` on test ${s.test+1}`:"";
@@ -472,69 +537,72 @@ function renderArena(){
   a.hidden=false;
   const p=duel.problem,g=duel.ghost,url=`https://codeforces.com/problemset/problem/${p.contestId}/${p.index}`;
   if(duel.status==="ready"){
-    a.innerHTML=`<h2>Соперник найден</h2>
+    a.innerHTML=`<h2>${tr("found")}</h2>
       <div class="vs">
-        <div class="side"><small>ты</small><span class="handle">${esc(duel.handle)}</span></div>
+        <div class="side"><small>${tr("you")}</small><span class="handle">${esc(duel.handle)}</span></div>
         <span class="x">vs</span>
-        <div class="side"><small>${g.type==="ghost"?"призрак":"синтетический"}</small><span class="rt">${oppLabel(g)}</span></div>
+        <div class="side"><small>${tr(g.type==="ghost"?"ghost":"synthetic")}</small><span class="rt">${oppLabel(g)}</span></div>
       </div>
-      ${g.type!=="ghost"?`<p class="hint">Почему не призрак: ${esc(g.reason)}</p>`:""}
-      <p class="hint">Задача рейтинга ${p.rating}, лимит ${fmt(duel.limit)}. Условие откроется после старта. Отправляй решение со своего аккаунта на Codeforces, страница сама увидит вердикт.</p>
-      <div class="actions"><button class="btn primary" data-act="start">Старт</button><button class="btn" data-act="close">Другая задача</button></div>`;
+      ${g.type!=="ghost"?`<p class="hint">${tr("whyNot")} ${esc(reasonText(g.reason))}</p>`:""}
+      <p class="hint">${tr("readyHint",{rating:p.rating,limit:fmt(duel.limit)})}</p>
+      <div class="actions"><button class="btn primary" data-act="start">${tr("start")}</button><button class="btn" data-act="close">${tr("another")}</button></div>`;
     return;
   }
   const el=duel.status==="live"?elapsed():duel.endSec;
   const gAc=ghostAc();
-  const shownRejects=g.rejects.filter(t=>t<=el&&(gAc==null||t<gAc));
-  const gEvents=shownRejects.map(t=>`<li><span class="ts">${fmt(t)}</span><span class="v-bad">не прошло</span></li>`).join("")
+  const shownRejects=g.rejects.filter(x=>x<=el&&(gAc==null||x<gAc));
+  const gEvents=shownRejects.map(x=>`<li><span class="ts">${fmt(x)}</span><span class="v-bad">${tr("rejected")}</span></li>`).join("")
     +(gAc!=null&&el>=gAc?`<li><span class="ts">${fmt(gAc)}</span><span class="v-ok">Accepted</span></li>`:"");
   const uEvents=duel.subs.filter(s=>s.t<=el+120).map(s=>`<li><span class="ts">${fmt(s.t)}</span>${verdictCell(s)}</li>`).join("");
-  const gState=duel.status==="live"?(gAc!=null&&el>=gAc?"отправил решение":"решает"):(gAc!=null&&gAc<=duel.endSec?"решил":"не решил");
-  const uState=duel.status==="live"?(duel.pollErr?`<span class="v-bad">${esc(duel.pollErr)}</span>`:"посылки проверяются каждые 6 секунд"):(duel.status==="won"?"решил":"не решил");
-  const tagsHtml=duel.status==="live"?`<span class="tag">теги откроются после дуэли</span>`:p.tags.map(t=>`<span class="tag">${esc(t)}</span>`).join("");
+  const gState=tr(duel.status==="live"?(gAc!=null&&el>=gAc?"gSubmitted":"gSolving"):(gAc!=null&&gAc<=duel.endSec?"solved":"notSolved"));
+  const uState=duel.status==="live"?(duel.pollErr?`<span class="v-bad">${esc(duel.pollErr)}</span>`:tr("polling")):tr(duel.status==="won"?"solved":"notSolved");
+  const tagsHtml=duel.status==="live"?`<span class="tag">${tr("tagsHidden")}</span>`:p.tags.map(x=>`<span class="tag">${esc(tagName(x))}</span>`).join("");
   let result="";
   if(duel.status!=="live"){
-    const title={won:"Победа",lost:duel.gaveUp?"Сдался":"Поражение",draw:"Ничья: никто не решил"}[duel.status];
-    let reveal;
-    if(g.type==="ghost"){
-      const solvedLine=g.solveSec!=null?`Задачу он сдал на ${fmt(g.realAc)} от начала контеста. Предыдущий AC был на ${fmt(g.prevAc)}, поэтому его время на эту задачу считается как ${fmt(g.solveSec)}.`:`На контесте он эту задачу не решил.`;
-      reveal=`Это был <a href="https://codeforces.com/profile/${encodeURIComponent(g.handle)}" target="_blank" rel="noopener" class="${rc(g.rating)}">${esc(g.handle)}</a> с рейтингом ${g.rating} на ${esc(g.contestName)}, итоговое место ${g.rank}. ${solvedLine} Из ${g.field} участников контеста его уровня задачу решили ${g.fieldSolved}.`;
-    }else{
-      reveal=`Играл синтетический соперник уровня ${g.rating}: ${esc(g.reason)}. Его время сгенерировано по разнице рейтинга задачи и соперника.`;
-    }
+    const title=tr({won:"titleWon",lost:duel.gaveUp?"titleGaveUp":"titleLost",draw:"titleDraw"}[duel.status]);
+    const reveal=g.type==="ghost"
+      ?tr("revealGhost",{...g,contestName:esc(g.contestName),link:`<a href="https://codeforces.com/profile/${encodeURIComponent(g.handle)}" target="_blank" rel="noopener" class="${rc(g.rating)}">${esc(g.handle)}</a>`})
+      :tr("revealSynth",{rating:g.rating,reason:esc(reasonText(g.reason))});
     result=`<div class="result ${duel.status}"><h3>${title}</h3><p>${reveal}</p>
-      <div class="actions"><button class="btn primary" data-act="next">Следующая дуэль</button><button class="btn" data-act="close">К настройкам</button></div></div>`;
+      <div class="actions"><button class="btn primary" data-act="next">${tr("nextDuel")}</button><button class="btn" data-act="close">${tr("toSettings")}</button></div></div>`;
   }
   a.innerHTML=`
     <div class="problem">
       <div><div class="pid">${p.contestId}${esc(p.index)} · <span class="${rc(p.rating)}">${p.rating}</span></div><h3>${esc(p.name)}</h3><div class="meta">${tagsHtml}</div></div>
-      <a class="btn" href="${url}" target="_blank" rel="noopener">Открыть задачу ↗</a>
+      <a class="btn" href="${url}" target="_blank" rel="noopener">${tr("openProblem")}</a>
     </div>
-    <div class="clock"><span class="t" id="clockT">${fmt(el)}</span><span class="sub" id="clockS">${duel.waiting?"соперник сдал, жду вердикты твоих посылок":"из "+fmt(duel.limit)}</span><div class="bar"><i id="clockBar" style="width:${Math.min(100,el/duel.limit*100)}%"></i></div></div>
+    <div class="clock"><span class="t" id="clockT">${fmt(el)}</span><span class="sub" id="clockS">${clockSub()}</span><div class="bar"><i id="clockBar" style="width:${Math.min(100,el/duel.limit*100)}%"></i></div></div>
     <div class="lanes">
-      <div class="lane you"><div class="who"><b>Ты</b><span class="handle">${esc(duel.handle)}</span></div><span class="state">${uState}</span><ul class="feed">${uEvents||`<li><span class="ts">—</span><span class="state">посылок пока нет</span></li>`}</ul></div>
-      <div class="lane gh"><div class="who"><b>Соперник</b><span class="rt" style="font-size:16px">${oppLabel(g)}</span></div><span class="state">${gState}</span><ul class="feed">${gEvents||`<li><span class="ts">—</span><span class="state">пишет код</span></li>`}</ul></div>
+      <div class="lane you"><div class="who"><b>${tr("laneYou")}</b><span class="handle">${esc(duel.handle)}</span></div><span class="state">${uState}</span><ul class="feed">${uEvents||`<li><span class="ts">—</span><span class="state">${tr("noSubs")}</span></li>`}</ul></div>
+      <div class="lane gh"><div class="who"><b>${tr("laneOpp")}</b><span class="rt" style="font-size:16px">${oppLabel(g)}</span></div><span class="state">${gState}</span><ul class="feed">${gEvents||`<li><span class="ts">—</span><span class="state">${tr("writing")}</span></li>`}</ul></div>
     </div>
-    ${duel.status==="live"?`<div class="actions"><button class="btn" data-act="poll">Проверить посылки сейчас</button><button class="btn danger" data-act="surrender">Сдаться</button></div>`:result}`;
+    ${duel.status==="live"?`<div class="actions"><button class="btn" data-act="poll">${tr("checkNow")}</button><button class="btn danger" data-act="surrender">${tr("surrender")}</button></div>`:result}`;
 }
+function clockSub(){return duel.waiting?tr("waiting"):tr("of",{limit:fmt(duel.limit)})}
 function renderClock(){
   if(!duel||duel.status!=="live")return;
-  const el=elapsed(),t=$("#clockT");if(!t)return;
-  t.textContent=fmt(Math.min(el,duel.limit));
+  const el=elapsed(),clock=$("#clockT");if(!clock)return;
+  clock.textContent=fmt(Math.min(el,duel.limit));
   $("#clockBar").style.width=Math.min(100,el/duel.limit*100)+"%";
-  $("#clockS").textContent=duel.waiting?"соперник сдал, жду вердикты твоих посылок":"из "+fmt(duel.limit);
+  $("#clockS").textContent=clockSub();
 }
 function renderHistory(){
   const w=history.filter(h=>h.status==="won").length,l=history.filter(h=>h.status==="lost").length,d=history.filter(h=>h.status==="draw").length;
   $("#record").innerHTML=history.length?`<i class="w">${w} W</i><i class="l">${l} L</i><i>${d} D</i>`:"";
-  if(!history.length){$("#histBody").innerHTML=`<p class="empty">Здесь появятся сыгранные дуэли: задача, результат и кто был призраком.</p>`;return}
-  const lab={won:"победа",lost:"поражение",draw:"ничья"};
-  $("#histBody").innerHTML=`<div class="tbl"><table><thead><tr><th class="c-date">Дата</th><th>Задача</th><th>Итог</th><th>Время</th><th>Соперник</th></tr></thead><tbody>${
-    history.slice(0,20).map(h=>`<tr><td class="c-date">${new Date(h.at).toLocaleDateString("ru-RU",{day:"2-digit",month:"2-digit"})}</td>
+  if(!history.length){$("#histBody").innerHTML=`<p class="empty">${tr("histEmpty")}</p>`;return}
+  const lab={won:tr("bWon"),lost:tr("bLost"),draw:tr("bDraw")};
+  $("#histBody").innerHTML=`<div class="tbl"><table><thead><tr><th class="c-date">${tr("hDate")}</th><th>${tr("hProblem")}</th><th>${tr("hResult")}</th><th>${tr("hTime")}</th><th>${tr("hOpp")}</th></tr></thead><tbody>${
+    history.slice(0,20).map(h=>`<tr><td class="c-date">${new Date(h.at).toLocaleDateString(settings.lang==="ru"?"ru-RU":"en-GB",{day:"2-digit",month:"2-digit"})}</td>
       <td class="p"><a href="https://codeforces.com/problemset/problem/${h.problem.contestId}/${encodeURIComponent(h.problem.index)}" target="_blank" rel="noopener">${h.problem.contestId}${esc(h.problem.index)}</a> ${esc(h.problem.name)} <span class="state">${h.problem.rating}</span></td>
-      <td><span class="badge ${h.status}">${lab[h.status]}</span>${h.gaveUp?' <span class="state">сдался</span>':""}</td><td>${fmt(h.sec)}</td>
-      <td>${h.opp.handle?`<span class="${rc(h.opp.rating)}">${esc(h.opp.handle)}</span>`:`<span class="${rc(h.opp.rating)}">бот ${h.opp.rating}</span>`}</td></tr>`).join("")
+      <td><span class="badge ${h.status}">${lab[h.status]}</span>${h.gaveUp?` <span class="state">${tr("gaveUpShort")}</span>`:""}</td><td>${fmt(h.sec)}</td>
+      <td>${h.opp.handle?`<span class="${rc(h.opp.rating)}">${esc(h.opp.handle)}</span>`:`<span class="${rc(h.opp.rating)}">${tr("bot",{rating:h.opp.rating})}</span>`}</td></tr>`).join("")
   }</tbody></table></div>`;
+}
+function applyLang(){
+  document.documentElement.lang=settings.lang;
+  document.querySelectorAll("[data-i18n]").forEach(el=>{el.textContent=tr(el.dataset.i18n)});
+  document.querySelectorAll("[data-i18n-aria]").forEach(el=>el.setAttribute("aria-label",tr(el.dataset.i18nAria)));
+  document.querySelectorAll("[data-lang]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.lang===settings.lang));
 }
 function render(){
   $("#setup").hidden=!!duel;
@@ -545,6 +613,8 @@ document.addEventListener("click",e=>{
   const chip=e.target.closest(".chip");
   if(chip){const t=chip.dataset.tag;settings.tags=settings.tags.includes(t)?settings.tags.filter(x=>x!==t):[...settings.tags,t];saveSettings();renderTags();return}
   if(e.target.id==="mode-all"||e.target.id==="mode-any"){settings.tagMode=e.target.id==="mode-all"?"all":"any";saveSettings();renderTags();return}
+  const lb=e.target.closest("[data-lang]");
+  if(lb){settings.lang=lb.dataset.lang;saveSettings();applyLang();renderTags();log("");render();return}
   const lim=e.target.closest("[data-limit]");
   if(lim){settings.limit=+lim.dataset.limit;saveSettings();renderLimit();return}
   const step=e.target.closest("[data-step]");
@@ -573,7 +643,7 @@ setInterval(()=>{
   if(!polling&&Date.now()-lastPollTry>gap)poll();
 },500);
 
-fillForm();render();
+applyLang();fillForm();render();
 </script>
 </body>
 </html>
