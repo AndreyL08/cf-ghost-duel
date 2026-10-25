@@ -177,22 +177,23 @@ const key=p=>p.contestId+"-"+p.index;
 function fmt(s){s=Math.max(0,Math.floor(s));const h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=s%60;const mm=String(m).padStart(2,"0"),ss=String(x).padStart(2,"0");return h?h+":"+mm+":"+ss:mm+":"+ss}
 function rc(r){if(r==null)return "";if(r<1200)return "r-gray";if(r<1400)return "r-green";if(r<1600)return "r-cyan";if(r<1900)return "r-blue";if(r<2100)return "r-violet";if(r<2400)return "r-orange";return "r-red"}
 function gauss(){let u=0,v=0;while(!u)u=Math.random();while(!v)v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)}
-function shuffle(a){for(let i=a.length-1;i>0;i--){const j=rand(i+1);[a[i],a[j]]=[a[j],a[i]]}return a}
 
-let cbSeq=0,lastCall=0,chain=Promise.resolve();
-function jsonp(method,params){
-  return new Promise((res,rej)=>{
-    const name="__cf"+Date.now().toString(36)+(cbSeq++);
-    const q=new URLSearchParams(Object.assign({},params,{jsonp:name}));
-    const s=document.createElement("script");
-    let done=false;
-    const cleanup=()=>{done=true;clearTimeout(t);try{delete window[name]}catch(e){window[name]=undefined}s.remove()};
-    const t=setTimeout(()=>{if(!done){cleanup();rej(new Error("Codeforces не ответил вовремя"))}},90000);
-    window[name]=d=>{cleanup();if(d&&d.status==="OK")res(d.result);else rej(new Error((d&&d.comment)||"Codeforces вернул ошибку"))};
-    s.onerror=()=>{if(!done){cleanup();console.warn("CF API: запрос не прошёл",s.src);rej(new Error("NET"))}};
-    s.src="https://codeforces.com/api/"+method+"?"+q.toString();
-    document.head.appendChild(s);
-  });
+let lastCall=0,chain=Promise.resolve();
+async function request(method,params){
+  const q=new URLSearchParams(params).toString();
+  const url="https://codeforces.com/api/"+method+(q?"?"+q:"");
+  const ctrl=new AbortController(),t=setTimeout(()=>ctrl.abort(),90000);
+  let d;
+  try{
+    const r=await fetch(url,{credentials:"omit",cache:"no-store",signal:ctrl.signal});
+    d=await r.json();
+  }catch(e){
+    console.warn("CF API: запрос не прошёл",url,e);
+    throw new Error(e.name==="AbortError"?"Codeforces не ответил вовремя":"NET");
+  }finally{clearTimeout(t)}
+  if(d&&d.status==="OK")return d.result;
+  console.warn("CF API:",url,d);
+  throw new Error((d&&d.comment)||"Codeforces вернул ошибку");
 }
 function cf(method,params={}){
   const p=chain.then(async()=>{
@@ -200,7 +201,7 @@ function cf(method,params={}){
       const wait=lastCall+2100-Date.now();
       if(wait>0)await sleep(wait);
       lastCall=Date.now();
-      try{return await jsonp(method,params)}
+      try{return await request(method,params)}
       catch(e){
         const retry=(e.message==="NET"||/limit/i.test(e.message))&&attempt<2;
         if(!retry)throw e.message==="NET"?new Error("Запрос к Codeforces не прошёл ("+method+")"):e;
@@ -249,19 +250,21 @@ async function buildGhost(p,R,limit){
   try{
     const changes=await cf(step,{contestId:p.contestId});
     if(!changes.length)return synthetic(p,R,limit,"контест нерейтинговый");
-    let pool=[];
-    for(const d of [100,200,350,600]){pool=changes.filter(x=>x.oldRating>0&&Math.abs(x.oldRating-R)<=d);if(pool.length>=15)break}
-    if(pool.length<3)return synthetic(p,R,limit,"в контесте мало участников твоего уровня");
-    pool=shuffle(pool).slice(0,60);
+    const ratingOf=new Map(changes.filter(x=>x.oldRating>0).map(x=>[x.handle,x.oldRating]));
+    if([...ratingOf.values()].filter(r=>Math.abs(r-R)<=600).length<3)return synthetic(p,R,limit,"в контесте мало участников твоего уровня");
     step="contest.standings";
-    const st=await cf(step,{contestId:p.contestId,handles:pool.map(x=>x.handle).join(";"),showUnofficial:false});
+    // Таблицу обычного контеста CF отдаёт только целиком: с handles и другими параметрами запрос отклоняется
+    const st=await cf(step,{contestId:p.contestId});
     const pi=st.problems.findIndex(q=>q.index===p.index);
-    const rows=st.rows.filter(r=>r.party.participantType==="CONTESTANT");
+    const hOf=r=>r.party.members[0].handle;
+    const rows=st.rows.filter(r=>r.party.participantType==="CONTESTANT"&&ratingOf.has(hOf(r)));
     if(pi<0||!rows.length)return synthetic(p,R,limit,"нет строк в таблице");
+    let pool=[];
+    for(const d of [100,200,350,600]){pool=rows.filter(r=>Math.abs(ratingOf.get(hOf(r))-R)<=d);if(pool.length>=15)break}
+    if(pool.length<3)return synthetic(p,R,limit,"в контесте мало участников твоего уровня");
     const solvedOf=r=>{const q=r.problemResults[pi];return q.points>0&&q.bestSubmissionTimeSeconds!=null};
-    const row=rows[rand(rows.length)];
-    const handle=row.party.members[0].handle;
-    const entry=pool.find(x=>x.handle===handle)||{};
+    const row=pool[rand(pool.length)];
+    const handle=hOf(row);
     const pr=row.problemResults[pi];
     const ok=solvedOf(row);
     let solveSec=null,realAc=null,prev=0;
@@ -272,8 +275,9 @@ async function buildGhost(p,R,limit){
     }
     const span=ok?solveSec:limit;
     const rejects=Array.from({length:Math.min(pr.rejectedAttemptCount||0,8)},()=>Math.round(span*(0.3+0.65*Math.random()))).sort((a,b)=>a-b);
-    return {type:"ghost",handle,rating:entry.oldRating,contestName:st.contest.name,contestId:p.contestId,rank:row.rank,solveSec,realAc,prevAc:ok?prev:null,rejects,field:rows.length,fieldSolved:rows.filter(solvedOf).length};
+    return {type:"ghost",handle,rating:ratingOf.get(handle),contestName:st.contest.name,contestId:p.contestId,rank:row.rank,solveSec,realAc,prevAc:ok?prev:null,rejects,field:pool.length,fieldSolved:pool.filter(solvedOf).length};
   }catch(e){
+    if(/unavailable/i.test(e.message))return synthetic(p,R,limit,"контест нерейтинговый");
     console.warn("buildGhost",p.contestId+p.index,step,e);
     return synthetic(p,R,limit,`${step} для контеста ${p.contestId}: ${e.message}`);
   }
@@ -314,9 +318,14 @@ async function search(){
     const info=await loadSolved(settings.handle);
     const cand=probs.filter(p=>p.rating>=settings.rmin&&p.rating<=settings.rmax&&!info.solved.has(key(p))&&tagOk(p));
     if(!cand.length)throw new Error("Под эти фильтры нет нерешённых задач. Расширь диапазон или убери теги.");
-    const p=cand[rand(cand.length)];
     log("Ищу соперника среди участников контеста");
-    const ghost=await buildGhost(p,settings.bot,settings.limit*60);
+    // Если у контеста нет рейтинговых данных, пробуем ещё пару задач, прежде чем звать синтетического соперника
+    let p,ghost;
+    for(let i=0;i<3;i++){
+      p=cand[rand(cand.length)];
+      ghost=await buildGhost(p,settings.bot,settings.limit*60);
+      if(ghost.type==="ghost")break;
+    }
     duel={handle:settings.handle,problem:{contestId:p.contestId,index:p.index,name:p.name,rating:p.rating,tags:p.tags},
       limit:settings.limit*60,bot:settings.bot,ghost,lastId:info.lastId,subs:[],status:"ready",start:null};
     saveDuel();log("");render();
@@ -410,7 +419,7 @@ function renderArena(){
     let reveal;
     if(g.type==="ghost"){
       const solvedLine=g.solveSec!=null?`Задачу он сдал на ${fmt(g.realAc)} от начала контеста. Предыдущий AC был на ${fmt(g.prevAc)}, поэтому его время на эту задачу считается как ${fmt(g.solveSec)}.`:`На контесте он эту задачу не решил.`;
-      reveal=`Это был <a href="https://codeforces.com/profile/${encodeURIComponent(g.handle)}" target="_blank" rel="noopener" class="${rc(g.rating)}">${esc(g.handle)}</a> с рейтингом ${g.rating} на ${esc(g.contestName)}, итоговое место ${g.rank}. ${solvedLine} Из ${g.field} участников его уровня в выборке задачу решили ${g.fieldSolved}.`;
+      reveal=`Это был <a href="https://codeforces.com/profile/${encodeURIComponent(g.handle)}" target="_blank" rel="noopener" class="${rc(g.rating)}">${esc(g.handle)}</a> с рейтингом ${g.rating} на ${esc(g.contestName)}, итоговое место ${g.rank}. ${solvedLine} Из ${g.field} участников контеста его уровня задачу решили ${g.fieldSolved}.`;
     }else{
       reveal=`Играл синтетический соперник уровня ${g.rating}: ${esc(g.reason)}. Его время сгенерировано по разнице рейтинга задачи и соперника.`;
     }
