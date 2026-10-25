@@ -92,6 +92,10 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
 .stepper button{flex:none;width:44px;border:0;background:transparent;color:var(--muted);font-size:20px;line-height:1;cursor:pointer;transition:background .15s,color .15s}
 .stepper button:hover{background:var(--line);color:var(--ink)}
 .hint{font-size:13px;color:var(--muted);margin:0;max-width:72ch}
+.ferr{font-size:13px;color:var(--bad);margin:0}
+.ferr:empty{display:none}
+.field input[aria-invalid="true"],.stepper:has(input[aria-invalid="true"]){border-color:var(--bad)}
+.field input[aria-invalid="true"]:focus,.stepper:has(input[aria-invalid="true"]):focus-within{box-shadow:0 0 0 4px color-mix(in srgb,var(--bad) 15%,transparent)}
 
 .switch{display:flex;gap:12px;align-items:center;cursor:pointer;width:fit-content}
 .switch input{appearance:none;-webkit-appearance:none;margin:0;flex:none;width:40px;height:24px;border-radius:999px;background:var(--line-strong);position:relative;cursor:pointer;transition:background .2s}
@@ -213,9 +217,9 @@ td.p a:hover{text-decoration:underline}
     <div class="grid">
       <div class="field"><label for="handle" data-i18n="handle"></label><input id="handle" placeholder="tourist" autocomplete="off" spellcheck="false"></div>
       <div class="field"><label for="rmin" data-i18n="probRating"></label>
-        <div class="range"><input id="rmin" type="number" inputmode="numeric" min="800" max="3500" step="100" data-i18n-aria="ratingFrom"><span>—</span><input id="rmax" type="number" inputmode="numeric" min="800" max="3500" step="100" data-i18n-aria="ratingTo"></div></div>
+        <div class="range"><input id="rmin" class="num" type="text" inputmode="numeric" maxlength="4" autocomplete="off" min="800" max="3500" data-i18n-aria="ratingFrom"><span>—</span><input id="rmax" class="num" type="text" inputmode="numeric" maxlength="4" autocomplete="off" min="800" max="3500" data-i18n-aria="ratingTo"></div><p class="ferr" id="errRating" role="alert"></p></div>
       <div class="field"><label for="bot" data-i18n="oppLevel"></label>
-        <div class="stepper"><button type="button" data-step="-50" data-i18n-aria="dec50">−</button><input id="bot" type="number" inputmode="numeric" min="400" max="3800" step="50"><button type="button" data-step="50" data-i18n-aria="inc50">+</button></div></div>
+        <div class="stepper"><button type="button" data-step="-50" data-i18n-aria="dec50">−</button><input id="bot" class="num" type="text" inputmode="numeric" maxlength="4" autocomplete="off" min="400" max="3800"><button type="button" data-step="50" data-i18n-aria="inc50">+</button></div><p class="ferr" id="errBot" role="alert"></p></div>
     </div>
     <div class="field"><span class="lbl" id="limit-lbl" data-i18n="limitLbl"></span>
       <div class="seg wide" id="limit" role="group" aria-labelledby="limit-lbl"><button type="button" data-limit="5">5</button><button type="button" data-limit="10">10</button><button type="button" data-limit="15">15</button><button type="button" data-limit="30">30</button><button type="button" data-limit="45">45</button><button type="button" data-limit="60">60</button><button type="button" data-limit="90">90</button><button type="button" data-limit="120">120</button></div></div>
@@ -250,6 +254,7 @@ const I18N={
     tags:"Теги",tagModeAria:"Как совмещать теги",modeAll:"все сразу",modeAny:"любой из",find:"Найти соперника",
     setupHint:"Соперник — запись реального участника того контеста, откуда задача, с рейтингом около выбранного уровня. Его попытки и время решения воспроизводятся по таблице результатов. Если у контеста нет рейтинговых данных, играет синтетический соперник.",
     history:"История",
+    errRatingRange:"Рейтинг задачи — число от 800 до 3500",errRatingOrder:"Нижняя граница не может быть больше верхней",errBotRange:"Уровень соперника — число от 400 до 3800",
     needHandle:"Введи свой хэндл на Codeforces",loadingProblems:"Загружаю задачи Codeforces",loadingSolved:"Смотрю, что ты уже решил",
     noProblems:"Под эти фильтры нет нерешённых задач. Расширь диапазон или убери теги.",searching:"Ищу соперника среди участников контеста",
     errTimeout:"Codeforces не ответил вовремя",errCf:"Codeforces вернул ошибку",errNet:v=>`Запрос к Codeforces не прошёл (${v.method})`,
@@ -258,7 +263,7 @@ const I18N={
     reason_apiErr:v=>`${v.step} для контеста ${v.id}: ${v.msg}`,
     found:"Соперник найден",you:"ты",ghost:"призрак",synthetic:"синтетический",whyNot:"Почему не призрак:",
     readyHint:v=>`Задача рейтинга ${v.rating}, лимит ${v.limit}. Условие откроется после старта. Отправляй решение со своего аккаунта на Codeforces, страница сама увидит вердикт.`,
-    start:"Старт",another:"Другая задача",openProblem:"Открыть задачу ↗",
+    start:"Старт",another:"Другая задача",back:"Назад",openProblem:"Открыть задачу ↗",
     testing:"тестируется",rejected:"не прошло",gSolving:"решает",gSubmitted:"отправил решение",solved:"решил",notSolved:"не решил",
     polling:"посылки проверяются каждые 6 секунд",noSubs:"посылок пока нет",writing:"пишет код",tagsHidden:"теги откроются после дуэли",
     laneYou:"Ты",laneOpp:"Соперник",of:v=>`из ${v.limit}`,waiting:"соперник сдал, жду вердикты твоих посылок",
@@ -279,6 +284,7 @@ const I18N={
     tags:"Tags",tagModeAria:"How to combine tags",modeAll:"all of",modeAny:"any of",find:"Find opponent",
     setupHint:"Your opponent is a recording of a real contestant from the contest the problem comes from, rated close to the level you chose. Their attempts and solve time are replayed from the contest standings. If the contest has no rating data, a synthetic opponent plays instead.",
     history:"History",
+    errRatingRange:"Problem rating must be a number from 800 to 3500",errRatingOrder:"The lower bound can't be above the upper bound",errBotRange:"Opponent level must be a number from 400 to 3800",
     needHandle:"Enter your Codeforces handle",loadingProblems:"Loading Codeforces problems",loadingSolved:"Checking what you have already solved",
     noProblems:"No unsolved problems match these filters. Widen the rating range or remove some tags.",searching:"Looking for an opponent among the contestants",
     errTimeout:"Codeforces did not respond in time",errCf:"Codeforces returned an error",errNet:v=>`Request to Codeforces failed (${v.method})`,
@@ -287,7 +293,7 @@ const I18N={
     reason_apiErr:v=>`${v.step} for contest ${v.id}: ${v.msg}`,
     found:"Opponent found",you:"you",ghost:"ghost",synthetic:"synthetic",whyNot:"Why not a ghost:",
     readyHint:v=>`Problem rated ${v.rating}, time limit ${v.limit}. The statement opens once you start. Submit from your own Codeforces account and this page will pick up the verdict.`,
-    start:"Start",another:"Another problem",openProblem:"Open problem ↗",
+    start:"Start",another:"Another problem",back:"Back",openProblem:"Open problem ↗",
     testing:"testing",rejected:"rejected",gSolving:"solving",gSubmitted:"submitted",solved:"solved",notSolved:"not solved",
     polling:"checking submissions every 6 seconds",noSubs:"no submissions yet",writing:"writing code",tagsHidden:"tags are revealed after the duel",
     laneYou:"You",laneOpp:"Opponent",of:v=>`of ${v.limit}`,waiting:"opponent submitted, waiting for your verdicts",
@@ -450,8 +456,28 @@ function renderTags(){
   $("#mode-any").setAttribute("aria-pressed",settings.tagMode==="any");
 }
 
+// show=false: только блокируем кнопку и обновляем уже показанные ошибки; show=true: показываем ошибки
+function validate(show){
+  const val=id=>{const v=$(id).value;return /^\d+$/.test(v)?+v:NaN};
+  const ok=(v,el)=>v>=+el.min&&v<=+el.max;
+  const rmin=val("#rmin"),rmax=val("#rmax"),bot=val("#bot");
+  const bad={rmin:!ok(rmin,$("#rmin")),rmax:!ok(rmax,$("#rmax")),bot:!ok(bot,$("#bot"))};
+  let rating=bad.rmin||bad.rmax?"errRatingRange":"";
+  if(!rating&&rmin>rmax){rating="errRatingOrder";bad.rmin=bad.rmax=true}
+  const fields=[["#errRating",rating,["#rmin","#rmax"]],["#errBot",bad.bot?"errBotRange":"",["#bot"]]];
+  for(const [errId,key,ids] of fields){
+    const err=$(errId);
+    if(!show&&!err.textContent)continue;
+    err.textContent=key?tr(key):"";
+    ids.forEach(id=>$(id).setAttribute("aria-invalid",!!key&&bad[id.slice(1)]));
+  }
+  const valid=!rating&&!bad.bot;
+  $("#go").disabled=busy||!valid;
+  return valid;
+}
 async function search(){
   if(busy)return;
+  if(!validate(true))return;
   readForm();
   if(!settings.handle){log(tr("needHandle"),true);$("#handle").focus();return}
   busy=true;$("#go").disabled=true;
@@ -474,7 +500,7 @@ async function search(){
       limit:settings.limit*60,bot:settings.bot,ghost,lastId:info.lastId,subs:[],status:"ready",start:null};
     saveDuel();log("");render();
   }catch(e){log(e.message,true)}
-  finally{busy=false;$("#go").disabled=false}
+  finally{busy=false;validate(false)}
 }
 function startDuel(){duel.status="live";duel.start=Date.now();lastPollAt=0;lastPollTry=Date.now();saveDuel();render()}
 function elapsed(){return duel&&duel.start?(Date.now()-duel.start)/1000:0}
@@ -513,7 +539,7 @@ function finish(status,sec,gaveUp){
     opp:g.type==="ghost"?{handle:g.handle,rating:g.rating}:{handle:null,rating:g.rating},gaveUp:!!gaveUp});
   history=history.slice(0,50);LS.set("history",history);
   if(settings.adaptive){
-    if(status==="won")settings.bot+=50;else if(status==="lost")settings.bot=Math.max(400,settings.bot-50);
+    if(status==="won")settings.bot=Math.min(3800,settings.bot+50);else if(status==="lost")settings.bot=Math.max(400,settings.bot-50);
     saveSettings();fillForm();
   }
   saveDuel();render();
@@ -545,7 +571,7 @@ function renderArena(){
       </div>
       ${g.type!=="ghost"?`<p class="hint">${tr("whyNot")} ${esc(reasonText(g.reason))}</p>`:""}
       <p class="hint">${tr("readyHint",{rating:p.rating,limit:fmt(duel.limit)})}</p>
-      <div class="actions"><button class="btn primary" data-act="start">${tr("start")}</button><button class="btn" data-act="close">${tr("another")}</button></div>`;
+      <div class="actions"><button class="btn primary" data-act="start">${tr("start")}</button><button class="btn" data-act="next">${tr("another")}</button><button class="btn" data-act="close">${tr("back")}</button></div>`;
     return;
   }
   const el=duel.status==="live"?elapsed():duel.endSec;
@@ -614,7 +640,7 @@ document.addEventListener("click",e=>{
   if(chip){const t=chip.dataset.tag;settings.tags=settings.tags.includes(t)?settings.tags.filter(x=>x!==t):[...settings.tags,t];saveSettings();renderTags();return}
   if(e.target.id==="mode-all"||e.target.id==="mode-any"){settings.tagMode=e.target.id==="mode-all"?"all":"any";saveSettings();renderTags();return}
   const lb=e.target.closest("[data-lang]");
-  if(lb){settings.lang=lb.dataset.lang;saveSettings();applyLang();renderTags();log("");render();return}
+  if(lb){settings.lang=lb.dataset.lang;saveSettings();applyLang();renderTags();validate(false);log("");render();return}
   const lim=e.target.closest("[data-limit]");
   if(lim){settings.limit=+lim.dataset.limit;saveSettings();renderLimit();return}
   const step=e.target.closest("[data-step]");
@@ -628,6 +654,15 @@ document.addEventListener("click",e=>{
   else if(a==="surrender")surrender();
 });
 $("#go").addEventListener("click",search);
+document.querySelectorAll("input.num").forEach(el=>{
+  // Оставляем только цифры (в том числе при вставке), сохраняя позицию курсора
+  el.addEventListener("input",()=>{
+    const v=el.value,clean=v.replace(/\D/g,"").slice(0,4);
+    if(v!==clean){const pos=Math.max(0,(el.selectionStart||0)-(v.length-clean.length));el.value=clean;el.setSelectionRange(pos,pos)}
+    validate(false);
+  });
+  el.addEventListener("blur",()=>validate(true));
+});
 $("#bot").addEventListener("input",e=>{e.target.className=rc(+e.target.value)});
 $("#handle").addEventListener("keydown",e=>{if(e.key==="Enter")search()});
 
@@ -643,7 +678,7 @@ setInterval(()=>{
   if(!polling&&Date.now()-lastPollTry>gap)poll();
 },500);
 
-applyLang();fillForm();render();
+applyLang();fillForm();validate(true);render();
 </script>
 </body>
 </html>
