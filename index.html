@@ -189,7 +189,7 @@ function jsonp(method,params){
     const cleanup=()=>{done=true;clearTimeout(t);try{delete window[name]}catch(e){window[name]=undefined}s.remove()};
     const t=setTimeout(()=>{if(!done){cleanup();rej(new Error("Codeforces не ответил вовремя"))}},90000);
     window[name]=d=>{cleanup();if(d&&d.status==="OK")res(d.result);else rej(new Error((d&&d.comment)||"Codeforces вернул ошибку"))};
-    s.onerror=()=>{if(!done){cleanup();rej(new Error("NET"))}};
+    s.onerror=()=>{if(!done){cleanup();console.warn("CF API: запрос не прошёл",s.src);rej(new Error("NET"))}};
     s.src="https://codeforces.com/api/"+method+"?"+q.toString();
     document.head.appendChild(s);
   });
@@ -245,14 +245,16 @@ function synthetic(p,R,limit,reason){
   return {type:"synthetic",rating:R,solveSec:solved?t:null,rejects,reason};
 }
 async function buildGhost(p,R,limit){
+  let step="contest.ratingChanges";
   try{
-    const changes=await cf("contest.ratingChanges",{contestId:p.contestId});
+    const changes=await cf(step,{contestId:p.contestId});
     if(!changes.length)return synthetic(p,R,limit,"контест нерейтинговый");
     let pool=[];
     for(const d of [100,200,350,600]){pool=changes.filter(x=>x.oldRating>0&&Math.abs(x.oldRating-R)<=d);if(pool.length>=15)break}
     if(pool.length<3)return synthetic(p,R,limit,"в контесте мало участников твоего уровня");
     pool=shuffle(pool).slice(0,60);
-    const st=await cf("contest.standings",{contestId:p.contestId,handles:pool.map(x=>x.handle).join(";"),showUnofficial:false});
+    step="contest.standings";
+    const st=await cf(step,{contestId:p.contestId,handles:pool.map(x=>x.handle).join(";"),showUnofficial:false});
     const pi=st.problems.findIndex(q=>q.index===p.index);
     const rows=st.rows.filter(r=>r.party.participantType==="CONTESTANT");
     if(pi<0||!rows.length)return synthetic(p,R,limit,"нет строк в таблице");
@@ -272,7 +274,8 @@ async function buildGhost(p,R,limit){
     const rejects=Array.from({length:Math.min(pr.rejectedAttemptCount||0,8)},()=>Math.round(span*(0.3+0.65*Math.random()))).sort((a,b)=>a-b);
     return {type:"ghost",handle,rating:entry.oldRating,contestName:st.contest.name,contestId:p.contestId,rank:row.rank,solveSec,realAc,prevAc:ok?prev:null,rejects,field:rows.length,fieldSolved:rows.filter(solvedOf).length};
   }catch(e){
-    return synthetic(p,R,limit,"не удалось загрузить таблицу контеста");
+    console.warn("buildGhost",p.contestId+p.index,step,e);
+    return synthetic(p,R,limit,`${step} для контеста ${p.contestId}: ${e.message}`);
   }
 }
 
@@ -387,6 +390,7 @@ function renderArena(){
         <span class="x">vs</span>
         <div class="side"><small>${g.type==="ghost"?"призрак":"синтетический"}</small><span class="rt">${oppLabel(g)}</span></div>
       </div>
+      ${g.type!=="ghost"?`<p class="hint">Почему не призрак: ${esc(g.reason)}</p>`:""}
       <p class="hint">Задача рейтинга ${p.rating}, лимит ${fmt(duel.limit)}. Условие откроется после старта. Отправляй решение со своего аккаунта на Codeforces, страница сама увидит вердикт.</p>
       <div class="actions"><button class="btn primary" data-act="start">Старт</button><button class="btn" data-act="close">Другая задача</button></div>`;
     return;
