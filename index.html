@@ -40,6 +40,7 @@
   --r-gray:#a0a0a0;--r-green:#4fc44f;--r-cyan:#3fd6cb;--r-blue:#7b8cff;--r-violet:#e070e0;--r-orange:#ffad33;--r-red:#ff5555;
   color-scheme:dark;}
 *{box-sizing:border-box}
+[hidden]{display:none!important}
 html,body{margin:0}
 body{background:var(--bg);color:var(--ink);font:15px/1.5 var(--f-body);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 48px}
 .wrap{max-width:960px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
@@ -251,7 +252,7 @@ async function buildGhost(p,R,limit){
     const changes=await cf(step,{contestId:p.contestId});
     if(!changes.length)return synthetic(p,R,limit,"контест нерейтинговый");
     const ratingOf=new Map(changes.filter(x=>x.oldRating>0).map(x=>[x.handle,x.oldRating]));
-    if([...ratingOf.values()].filter(r=>Math.abs(r-R)<=600).length<3)return synthetic(p,R,limit,"в контесте мало участников твоего уровня");
+    if([...ratingOf.values()].filter(r=>Math.abs(r-R)<=350).length<3)return synthetic(p,R,limit,"в контесте мало участников твоего уровня");
     step="contest.standings";
     // Таблицу обычного контеста CF отдаёт только целиком: с handles и другими параметрами запрос отклоняется
     const st=await cf(step,{contestId:p.contestId});
@@ -260,7 +261,7 @@ async function buildGhost(p,R,limit){
     const rows=st.rows.filter(r=>r.party.participantType==="CONTESTANT"&&ratingOf.has(hOf(r)));
     if(pi<0||!rows.length)return synthetic(p,R,limit,"нет строк в таблице");
     let pool=[];
-    for(const d of [100,200,350,600]){pool=rows.filter(r=>Math.abs(ratingOf.get(hOf(r))-R)<=d);if(pool.length>=15)break}
+    for(const d of [100,200,350]){pool=rows.filter(r=>Math.abs(ratingOf.get(hOf(r))-R)<=d);if(pool.length>=15)break}
     if(pool.length<3)return synthetic(p,R,limit,"в контесте мало участников твоего уровня");
     const solvedOf=r=>{const q=r.problemResults[pi];return q.points>0&&q.bestSubmissionTimeSeconds!=null};
     const row=pool[rand(pool.length)];
