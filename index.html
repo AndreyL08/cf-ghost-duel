@@ -417,16 +417,26 @@ async function buildGhost(p,R,limit){
     for(const d of [100,200,350]){pool=rows.filter(r=>Math.abs(ratingOf.get(hOf(r))-R)<=d);if(pool.length>=15)break}
     if(pool.length<3)return synthetic(p,R,limit,{k:"few"});
     const solvedOf=r=>{const q=r.problemResults[pi];return q.points>0&&q.bestSubmissionTimeSeconds!=null};
-    const row=pool[rand(pool.length)];
+    // Время на задачу считаем от предыдущего AC участника: в контесте он сначала решал другие задачи
+    const timing=r=>{
+      const realAc=r.problemResults[pi].bestSubmissionTimeSeconds;let prev=0;
+      r.problemResults.forEach((q,j)=>{if(j!==pi&&q.points>0&&q.bestSubmissionTimeSeconds!=null&&q.bestSubmissionTimeSeconds<realAc)prev=Math.max(prev,q.bestSubmissionTimeSeconds)});
+      return {realAc,prev,solveSec:Math.max(60,realAc-prev)};
+    };
+    let row=pool[rand(pool.length)];
+    const ok=solvedOf(row);
+    // Решил ли призрак, решает случайная строка, так доля решивших остаётся честной.
+    // Если решил, берём случайного из решивших без 10% самых быстрых и 10% самых медленных
+    if(ok){
+      const solvers=pool.filter(solvedOf).map(r=>({r,s:timing(r).solveSec})).sort((a,b)=>a.s-b.s);
+      const cut=Math.floor(solvers.length*0.1);
+      const mid=solvers.slice(cut,solvers.length-cut);
+      row=mid[rand(mid.length)].r;
+    }
     const handle=hOf(row);
     const pr=row.problemResults[pi];
-    const ok=solvedOf(row);
     let solveSec=null,realAc=null,prev=0;
-    if(ok){
-      realAc=pr.bestSubmissionTimeSeconds;
-      row.problemResults.forEach((q,j)=>{if(j!==pi&&q.points>0&&q.bestSubmissionTimeSeconds!=null&&q.bestSubmissionTimeSeconds<realAc)prev=Math.max(prev,q.bestSubmissionTimeSeconds)});
-      solveSec=Math.max(60,realAc-prev);
-    }
+    if(ok)({realAc,prev,solveSec}=timing(row));
     const span=ok?solveSec:limit;
     const rejects=Array.from({length:Math.min(pr.rejectedAttemptCount||0,8)},()=>Math.round(span*(0.3+0.65*Math.random()))).sort((a,b)=>a-b);
     return {type:"ghost",handle,rating:ratingOf.get(handle),contestName:st.contest.name,contestId:p.contestId,rank:row.rank,solveSec,realAc,prevAc:ok?prev:null,rejects,field:pool.length,fieldSolved:pool.filter(solvedOf).length};
