@@ -1,0 +1,483 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>CF Ghost Duel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Onest:wght@400;500;600&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+:root{
+  --bg:#eef1f6;
+  --surface:#ffffff;
+  --surface-2:#f6f8fb;
+  --ink:#141922;
+  --muted:#5a6475;
+  --line:#d8dee8;
+  --you:#1d5bd8;
+  --you-soft:#e3ecfd;
+  --on-you:#ffffff;
+  --ghost:#8a3fb3;
+  --ghost-soft:#f2e8f8;
+  --ok:#17803d;
+  --bad:#c42b2b;
+  --wait:#a86500;
+  --r-gray:#7c7c7c;--r-green:#008000;--r-cyan:#03a89e;--r-blue:#2a3fd6;--r-violet:#a0a;--r-orange:#e08a00;--r-red:#e00000;
+  --f-display:"Unbounded","Arial Black",system-ui,sans-serif;
+  --f-body:"Onest",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0d1118;--surface:#151b25;--surface-2:#1b2230;--ink:#e7ebf2;--muted:#8f9aae;--line:#283142;
+  --you:#6d9dff;--you-soft:#1a2a4a;--on-you:#0d1118;--ghost:#c88ae8;--ghost-soft:#2d1f3a;--ok:#4fcf7c;--bad:#ff6b6b;--wait:#f0b04a;
+  --r-gray:#a0a0a0;--r-green:#4fc44f;--r-cyan:#3fd6cb;--r-blue:#7b8cff;--r-violet:#e070e0;--r-orange:#ffad33;--r-red:#ff5555;
+  color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --bg:#0d1118;--surface:#151b25;--surface-2:#1b2230;--ink:#e7ebf2;--muted:#8f9aae;--line:#283142;
+  --you:#6d9dff;--you-soft:#1a2a4a;--on-you:#0d1118;--ghost:#c88ae8;--ghost-soft:#2d1f3a;--ok:#4fcf7c;--bad:#ff6b6b;--wait:#f0b04a;
+  --r-gray:#a0a0a0;--r-green:#4fc44f;--r-cyan:#3fd6cb;--r-blue:#7b8cff;--r-violet:#e070e0;--r-orange:#ffad33;--r-red:#ff5555;
+  color-scheme:dark;}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:15px/1.5 var(--f-body);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 48px}
+.wrap{max-width:960px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+a{color:var(--you)}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--you);outline-offset:2px}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.brand{display:flex;align-items:baseline;gap:10px}
+.brand h1{font:700 22px/1 var(--f-display);margin:0;letter-spacing:-.01em}
+.brand h1 b{color:var(--ghost);font-weight:700}
+.brand span{color:var(--muted);font-size:13px}
+.record{font:500 13px/1 var(--f-mono);display:flex;gap:6px;align-items:center;color:var(--muted)}
+.record i{font-style:normal;padding:5px 8px;border-radius:6px;background:var(--surface);border:1px solid var(--line)}
+.record .w{color:var(--ok)}.record .l{color:var(--bad)}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:20px;display:flex;flex-direction:column;gap:18px}
+.panel h2{font:500 15px/1.2 var(--f-display);margin:0;letter-spacing:.01em}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px}
+.field{display:flex;flex-direction:column;gap:6px;min-width:0}
+.field label,.lbl{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:500}
+.field input,.field select{background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:9px 11px;width:100%;min-width:0}
+.range{display:flex;gap:6px;align-items:center}
+.range span{color:var(--muted)}
+.hint{font-size:13px;color:var(--muted);margin:0}
+.check{display:flex;gap:8px;align-items:center;font-size:14px;cursor:pointer}
+.check input{width:16px;height:16px;accent-color:var(--you)}
+.tags{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);background:var(--surface-2);border-radius:999px;padding:5px 11px;font-size:13px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--you-soft);border-color:var(--you);color:var(--you)}
+.tagrow{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{border:0;background:transparent;padding:5px 10px;font-size:13px;cursor:pointer;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--surface)}
+.actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.btn{border:1px solid var(--line);background:var(--surface-2);border-radius:9px;padding:10px 16px;cursor:pointer;font-weight:500}
+.btn:hover{border-color:var(--muted)}
+.btn.primary{background:var(--you);border-color:var(--you);color:var(--on-you);font-family:var(--f-display);font-size:14px;font-weight:500;letter-spacing:.02em;padding:12px 20px}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn.danger{color:var(--bad)}
+.btn:disabled{opacity:.55;cursor:default}
+.log{font:13px/1.6 var(--f-mono);color:var(--muted);margin:0;min-height:1.6em}
+.log.err{color:var(--bad)}
+.dots::after{content:"";animation:dots 1.2s steps(4) infinite}
+@keyframes dots{0%{content:""}25%{content:"."}50%{content:".."}75%{content:"..."}}
+.problem{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap}
+.problem .pid{font:700 13px/1 var(--f-mono);color:var(--muted);letter-spacing:.04em}
+.problem h3{font:600 20px/1.3 var(--f-body);margin:6px 0 0;text-wrap:balance}
+.meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.tag{font-size:12px;padding:3px 8px;border-radius:5px;background:var(--surface-2);border:1px solid var(--line);color:var(--muted)}
+.clock{text-align:center;display:flex;flex-direction:column;gap:4px;align-items:center}
+.clock .t{font:700 clamp(40px,10vw,64px)/1 var(--f-mono);font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.clock .sub{font:500 13px/1 var(--f-mono);color:var(--muted)}
+.bar{height:4px;background:var(--line);border-radius:4px;overflow:hidden;width:100%;max-width:420px}
+.bar i{display:block;height:100%;background:var(--ink);width:0}
+.lanes{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.lane{border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:12px;min-width:0;border:1px solid var(--line)}
+.lane.you{background:var(--you-soft);border-color:color-mix(in srgb,var(--you) 35%,var(--line))}
+.lane.gh{background:var(--ghost-soft);border-color:color-mix(in srgb,var(--ghost) 35%,var(--line))}
+.lane .who{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.lane .who b{font:500 14px/1.2 var(--f-display)}
+.lane.you .who b{color:var(--you)}.lane.gh .who b{color:var(--ghost)}
+.handle{font:600 14px/1.2 var(--f-body);overflow-wrap:anywhere}
+.state{font-size:13px;color:var(--muted)}
+.feed{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px;font:13px/1.4 var(--f-mono)}
+.feed li{display:flex;gap:10px;align-items:baseline}
+.feed .ts{color:var(--muted);font-variant-numeric:tabular-nums;min-width:52px}
+.v-ok{color:var(--ok);font-weight:700}.v-bad{color:var(--bad)}.v-wait{color:var(--wait)}
+.result{border-radius:12px;padding:20px;display:flex;flex-direction:column;gap:10px;border:1px solid var(--line);background:var(--surface-2)}
+.result h3{font:700 24px/1.1 var(--f-display);margin:0}
+.result.won h3{color:var(--ok)}.result.lost h3{color:var(--bad)}.result.draw h3{color:var(--muted)}
+.result p{margin:0;max-width:68ch}
+.vs{display:flex;align-items:center;justify-content:center;gap:16px;padding:12px 0;flex-wrap:wrap}
+.vs .side{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:0}
+.vs .side small{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em}
+.vs .x{font:700 28px/1 var(--f-display);color:var(--muted)}
+.rt{font:700 22px/1 var(--f-mono)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+.tbl{overflow-x:auto}
+th{text-align:left;font-weight:500;color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em;padding:6px 8px;border-bottom:1px solid var(--line)}
+td{padding:8px;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums;white-space:nowrap}
+td.p{white-space:normal;min-width:160px}
+.empty{color:var(--muted);font-size:14px;margin:0}
+.r-gray{color:var(--r-gray)}.r-green{color:var(--r-green)}.r-cyan{color:var(--r-cyan)}.r-blue{color:var(--r-blue)}.r-violet{color:var(--r-violet)}.r-orange{color:var(--r-orange)}.r-red{color:var(--r-red)}
+@media (max-width:640px){.lanes{grid-template-columns:1fr}.panel{padding:16px}}
+@media (prefers-reduced-motion:reduce){.dots::after{animation:none;content:"..."}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand"><h1>CF <b>Ghost</b> Duel</h1><span>дуэль с призраком реального участника</span></div>
+    <div class="record" id="record"></div>
+  </header>
+
+  <section class="panel" id="setup">
+    <h2>Поиск соперника</h2>
+    <div class="grid">
+      <div class="field"><label for="handle">Твой хэндл</label><input id="handle" placeholder="tourist" autocomplete="off" spellcheck="false"></div>
+      <div class="field"><label for="rmin">Рейтинг задачи</label>
+        <div class="range"><input id="rmin" type="number" min="800" max="3500" step="100"><span>–</span><input id="rmax" type="number" min="800" max="3500" step="100"></div></div>
+      <div class="field"><label for="bot">Уровень соперника</label><input id="bot" type="number" min="400" max="3800" step="50"></div>
+      <div class="field"><label for="limit">Лимит времени</label>
+        <select id="limit"><option value="15">15 минут</option><option value="30">30 минут</option><option value="45">45 минут</option><option value="60">60 минут</option><option value="90">90 минут</option><option value="120">2 часа</option></select></div>
+    </div>
+    <label class="check"><input type="checkbox" id="adaptive"> Подстраивать уровень соперника: +50 за твою победу, −50 за поражение</label>
+    <div class="field">
+      <div class="tagrow"><span class="lbl">Теги</span>
+        <div class="seg" role="group" aria-label="Как совмещать теги"><button type="button" id="mode-all">все сразу</button><button type="button" id="mode-any">любой из</button></div></div>
+      <div class="tags" id="tags"></div>
+    </div>
+    <div class="actions"><button class="btn primary" id="go">Найти соперника</button><p class="log" id="log"></p></div>
+    <p class="hint">Соперник — запись реального участника того контеста, откуда задача, с рейтингом около выбранного уровня. Его попытки и время решения воспроизводятся по таблице результатов. Если у контеста нет рейтинговых данных, играет синтетический соперник.</p>
+  </section>
+
+  <section class="panel" id="arena" hidden></section>
+
+  <section class="panel" id="hist">
+    <h2>История</h2>
+    <div id="histBody"></div>
+  </section>
+</div>
+
+<script>
+const TAGS=["implementation","math","greedy","dp","data structures","brute force","constructive algorithms","graphs","sortings","binary search","dfs and similar","trees","strings","number theory","combinatorics","two pointers","bitmasks","geometry","dsu","shortest paths","probabilities","divide and conquer","hashing","games","interactive","matrices"];
+const $=s=>document.querySelector(s);
+const LS={get(k,d){try{const v=localStorage.getItem("cfgd."+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem("cfgd."+k,JSON.stringify(v))}catch(e){}}};
+let settings=Object.assign({handle:"",rmin:1200,rmax:1600,bot:1500,limit:45,adaptive:true,tags:[],tagMode:"any"},LS.get("settings",{}));
+let history=LS.get("history",[]);
+let duel=LS.get("duel",null);
+let problemsCache=null,solvedCache=null,polling=false,lastPollAt=0,lastPollTry=0,busy=false;
+
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const rand=n=>Math.floor(Math.random()*n);
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const key=p=>p.contestId+"-"+p.index;
+function fmt(s){s=Math.max(0,Math.floor(s));const h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=s%60;const mm=String(m).padStart(2,"0"),ss=String(x).padStart(2,"0");return h?h+":"+mm+":"+ss:mm+":"+ss}
+function rc(r){if(r==null)return "";if(r<1200)return "r-gray";if(r<1400)return "r-green";if(r<1600)return "r-cyan";if(r<1900)return "r-blue";if(r<2100)return "r-violet";if(r<2400)return "r-orange";return "r-red"}
+function gauss(){let u=0,v=0;while(!u)u=Math.random();while(!v)v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)}
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=rand(i+1);[a[i],a[j]]=[a[j],a[i]]}return a}
+
+let cbSeq=0,lastCall=0,chain=Promise.resolve();
+function jsonp(method,params){
+  return new Promise((res,rej)=>{
+    const name="__cf"+Date.now().toString(36)+(cbSeq++);
+    const q=new URLSearchParams(Object.assign({},params,{jsonp:name}));
+    const s=document.createElement("script");
+    let done=false;
+    const cleanup=()=>{done=true;clearTimeout(t);try{delete window[name]}catch(e){window[name]=undefined}s.remove()};
+    const t=setTimeout(()=>{if(!done){cleanup();rej(new Error("Codeforces не ответил вовремя"))}},90000);
+    window[name]=d=>{cleanup();if(d&&d.status==="OK")res(d.result);else rej(new Error((d&&d.comment)||"Codeforces вернул ошибку"))};
+    s.onerror=()=>{if(!done){cleanup();rej(new Error("NET"))}};
+    s.src="https://codeforces.com/api/"+method+"?"+q.toString();
+    document.head.appendChild(s);
+  });
+}
+function cf(method,params={}){
+  const p=chain.then(async()=>{
+    for(let attempt=0;;attempt++){
+      const wait=lastCall+2100-Date.now();
+      if(wait>0)await sleep(wait);
+      lastCall=Date.now();
+      try{return await jsonp(method,params)}
+      catch(e){
+        const retry=(e.message==="NET"||/limit/i.test(e.message))&&attempt<2;
+        if(!retry)throw e.message==="NET"?new Error("Запрос к Codeforces не прошёл ("+method+")"):e;
+        await sleep(2500);
+      }
+    }
+  });
+  chain=p.catch(()=>{});
+  return p;
+}
+
+async function loadProblems(){
+  if(problemsCache)return problemsCache;
+  const r=await cf("problemset.problems");
+  problemsCache=r.problems.filter(p=>p.rating&&p.contestId<100000&&!p.tags.includes("*special"));
+  return problemsCache;
+}
+async function loadSolved(handle){
+  if(solvedCache&&solvedCache.handle===handle&&Date.now()-solvedCache.at<60000)return solvedCache;
+  let subs;
+  try{subs=await cf("user.status",{handle})}
+  catch(e){throw new Error("Не получилось загрузить посылки "+handle+". Проверь хэндл.")}
+  const solved=new Set();let lastId=0;
+  for(const s of subs){if(s.id>lastId)lastId=s.id;if(s.verdict==="OK")solved.add(key(s.problem))}
+  solvedCache={handle,solved,lastId,at:Date.now()};
+  return solvedCache;
+}
+function tagOk(p){
+  const t=settings.tags;if(!t.length)return true;
+  return settings.tagMode==="all"?t.every(x=>p.tags.includes(x)):t.some(x=>p.tags.includes(x));
+}
+
+function synthetic(p,R,limit,reason){
+  const d=p.rating-R;
+  const pSolve=1/(1+Math.pow(10,d/400));
+  const solved=Math.random()<pSolve;
+  const median=900*Math.pow(2,d/300);
+  const t=Math.round(Math.max(90,median*Math.exp(0.45*gauss())));
+  const span=solved?t:limit;
+  const n=Math.min(4,Math.floor(-Math.log(Math.random())*(solved?0.7:1.2)));
+  const rejects=Array.from({length:n},()=>Math.round(span*(0.3+0.65*Math.random()))).sort((a,b)=>a-b);
+  return {type:"synthetic",rating:R,solveSec:solved?t:null,rejects,reason};
+}
+async function buildGhost(p,R,limit){
+  try{
+    const changes=await cf("contest.ratingChanges",{contestId:p.contestId});
+    if(!changes.length)return synthetic(p,R,limit,"контест нерейтинговый");
+    let pool=[];
+    for(const d of [100,200,350,600]){pool=changes.filter(x=>x.oldRating>0&&Math.abs(x.oldRating-R)<=d);if(pool.length>=15)break}
+    if(pool.length<3)return synthetic(p,R,limit,"в контесте мало участников твоего уровня");
+    pool=shuffle(pool).slice(0,60);
+    const st=await cf("contest.standings",{contestId:p.contestId,handles:pool.map(x=>x.handle).join(";"),showUnofficial:false});
+    const pi=st.problems.findIndex(q=>q.index===p.index);
+    const rows=st.rows.filter(r=>r.party.participantType==="CONTESTANT");
+    if(pi<0||!rows.length)return synthetic(p,R,limit,"нет строк в таблице");
+    const solvedOf=r=>{const q=r.problemResults[pi];return q.points>0&&q.bestSubmissionTimeSeconds!=null};
+    const row=rows[rand(rows.length)];
+    const handle=row.party.members[0].handle;
+    const entry=pool.find(x=>x.handle===handle)||{};
+    const pr=row.problemResults[pi];
+    const ok=solvedOf(row);
+    let solveSec=null,realAc=null,prev=0;
+    if(ok){
+      realAc=pr.bestSubmissionTimeSeconds;
+      row.problemResults.forEach((q,j)=>{if(j!==pi&&q.points>0&&q.bestSubmissionTimeSeconds!=null&&q.bestSubmissionTimeSeconds<realAc)prev=Math.max(prev,q.bestSubmissionTimeSeconds)});
+      solveSec=Math.max(60,realAc-prev);
+    }
+    const span=ok?solveSec:limit;
+    const rejects=Array.from({length:Math.min(pr.rejectedAttemptCount||0,8)},()=>Math.round(span*(0.3+0.65*Math.random()))).sort((a,b)=>a-b);
+    return {type:"ghost",handle,rating:entry.oldRating,contestName:st.contest.name,contestId:p.contestId,rank:row.rank,solveSec,realAc,prevAc:ok?prev:null,rejects,field:rows.length,fieldSolved:rows.filter(solvedOf).length};
+  }catch(e){
+    return synthetic(p,R,limit,"не удалось загрузить таблицу контеста");
+  }
+}
+
+function log(msg,err){const el=$("#log");el.className="log"+(err?" err":msg&&!err?" dots":"");el.textContent=msg||""}
+function saveSettings(){LS.set("settings",settings)}
+function saveDuel(){LS.set("duel",duel)}
+function readForm(){
+  settings.handle=$("#handle").value.trim();
+  settings.rmin=+$("#rmin").value||800;settings.rmax=+$("#rmax").value||3500;
+  if(settings.rmin>settings.rmax)[settings.rmin,settings.rmax]=[settings.rmax,settings.rmin];
+  settings.bot=+$("#bot").value||1500;settings.limit=+$("#limit").value||45;
+  settings.adaptive=$("#adaptive").checked;
+  saveSettings();
+}
+function fillForm(){
+  $("#handle").value=settings.handle;$("#rmin").value=settings.rmin;$("#rmax").value=settings.rmax;
+  $("#bot").value=settings.bot;$("#limit").value=String(settings.limit);$("#adaptive").checked=settings.adaptive;
+  $("#bot").className=rc(settings.bot);
+  renderTags();
+}
+function renderTags(){
+  $("#tags").innerHTML=TAGS.map(t=>`<button type="button" class="chip" data-tag="${esc(t)}" aria-pressed="${settings.tags.includes(t)}">${esc(t)}</button>`).join("");
+  $("#mode-all").setAttribute("aria-pressed",settings.tagMode==="all");
+  $("#mode-any").setAttribute("aria-pressed",settings.tagMode==="any");
+}
+
+async function search(){
+  if(busy)return;
+  readForm();
+  if(!settings.handle){log("Введи свой хэндл на Codeforces",true);$("#handle").focus();return}
+  busy=true;$("#go").disabled=true;
+  try{
+    log("Загружаю задачи Codeforces");
+    const probs=await loadProblems();
+    log("Смотрю, что ты уже решил");
+    const info=await loadSolved(settings.handle);
+    const cand=probs.filter(p=>p.rating>=settings.rmin&&p.rating<=settings.rmax&&!info.solved.has(key(p))&&tagOk(p));
+    if(!cand.length)throw new Error("Под эти фильтры нет нерешённых задач. Расширь диапазон или убери теги.");
+    const p=cand[rand(cand.length)];
+    log("Ищу соперника среди участников контеста");
+    const ghost=await buildGhost(p,settings.bot,settings.limit*60);
+    duel={handle:settings.handle,problem:{contestId:p.contestId,index:p.index,name:p.name,rating:p.rating,tags:p.tags},
+      limit:settings.limit*60,bot:settings.bot,ghost,lastId:info.lastId,subs:[],status:"ready",start:null};
+    saveDuel();log("");render();
+  }catch(e){log(e.message,true)}
+  finally{busy=false;$("#go").disabled=false}
+}
+function startDuel(){duel.status="live";duel.start=Date.now();lastPollAt=0;lastPollTry=Date.now();saveDuel();render()}
+function elapsed(){return duel&&duel.start?(Date.now()-duel.start)/1000:0}
+function ghostAc(){const g=duel.ghost;return g.solveSec!=null&&g.solveSec<=duel.limit?g.solveSec:null}
+
+async function poll(){
+  if(!duel||duel.status!=="live"||polling)return;
+  polling=true;lastPollTry=Date.now();
+  const startedAt=Date.now();
+  try{
+    const subs=await cf("user.status",{handle:duel.handle,from:1,count:25});
+    const t0=duel.start/1000;
+    duel.subs=subs.filter(s=>s.id>duel.lastId&&s.problem.contestId===duel.problem.contestId&&s.problem.index===duel.problem.index)
+      .map(s=>({id:s.id,t:Math.max(0,s.creationTimeSeconds-t0),v:s.verdict||"TESTING",test:s.passedTestCount}))
+      .sort((a,b)=>a.t-b.t);
+    lastPollAt=startedAt;duel.pollErr=null;saveDuel();
+  }catch(e){duel.pollErr=e.message}
+  polling=false;resolveDuel();renderArena();
+}
+function resolveDuel(){
+  if(!duel||duel.status!=="live")return;
+  const el=elapsed(),gAc=ghostAc();
+  const ac=duel.subs.find(s=>s.v==="OK"&&s.t<=duel.limit);
+  if(ac&&(gAc==null||ac.t<=gAc))return finish("won",ac.t);
+  const cutoff=gAc!=null?gAc:duel.limit;
+  if(el<cutoff){duel.waiting=false;return}
+  const pending=duel.subs.some(s=>s.v==="TESTING"&&s.t<=cutoff);
+  const fresh=lastPollAt>=duel.start+cutoff*1000+1500;
+  if(pending||!fresh){duel.waiting=true;return}
+  finish(gAc!=null?"lost":"draw",cutoff);
+}
+function finish(status,sec,gaveUp){
+  duel.status=status;duel.endSec=sec;duel.gaveUp=!!gaveUp;duel.waiting=false;
+  const g=duel.ghost;
+  history.unshift({at:Date.now(),problem:duel.problem,status,sec,bot:duel.bot,
+    opp:g.type==="ghost"?{handle:g.handle,rating:g.rating}:{handle:null,rating:g.rating},gaveUp:!!gaveUp});
+  history=history.slice(0,50);LS.set("history",history);
+  if(settings.adaptive){
+    if(status==="won")settings.bot+=50;else if(status==="lost")settings.bot=Math.max(400,settings.bot-50);
+    saveSettings();fillForm();
+  }
+  saveDuel();render();
+}
+function surrender(){if(duel&&duel.status==="live")finish("lost",elapsed(),true)}
+function closeDuel(){duel=null;saveDuel();render()}
+
+function verdictCell(s){
+  if(s.v==="OK")return `<span class="v-ok">Accepted</span>`;
+  if(s.v==="TESTING")return `<span class="v-wait">тестируется</span>`;
+  const map={WRONG_ANSWER:"Wrong answer",TIME_LIMIT_EXCEEDED:"Time limit",MEMORY_LIMIT_EXCEEDED:"Memory limit",RUNTIME_ERROR:"Runtime error",COMPILATION_ERROR:"Compilation error",IDLENESS_LIMIT_EXCEEDED:"Idleness limit"};
+  const name=map[s.v]||s.v.replace(/_/g," ").toLowerCase();
+  const test=s.v!=="COMPILATION_ERROR"&&s.test!=null?` on test ${s.test+1}`:"";
+  return `<span class="v-bad">${esc(name+test)}</span>`;
+}
+function oppLabel(g){return `<span class="${rc(g.rating)}">${g.rating!=null?g.rating:"?"}</span>`}
+
+function renderArena(){
+  const a=$("#arena");
+  if(!duel){a.hidden=true;return}
+  a.hidden=false;
+  const p=duel.problem,g=duel.ghost,url=`https://codeforces.com/problemset/problem/${p.contestId}/${p.index}`;
+  if(duel.status==="ready"){
+    a.innerHTML=`<h2>Соперник найден</h2>
+      <div class="vs">
+        <div class="side"><small>ты</small><span class="handle">${esc(duel.handle)}</span></div>
+        <span class="x">vs</span>
+        <div class="side"><small>${g.type==="ghost"?"призрак":"синтетический"}</small><span class="rt">${oppLabel(g)}</span></div>
+      </div>
+      <p class="hint">Задача рейтинга ${p.rating}, лимит ${fmt(duel.limit)}. Условие откроется после старта. Отправляй решение со своего аккаунта на Codeforces, страница сама увидит вердикт.</p>
+      <div class="actions"><button class="btn primary" data-act="start">Старт</button><button class="btn" data-act="close">Другая задача</button></div>`;
+    return;
+  }
+  const el=duel.status==="live"?elapsed():duel.endSec;
+  const gAc=ghostAc();
+  const shownRejects=g.rejects.filter(t=>t<=el&&(gAc==null||t<gAc));
+  const gEvents=shownRejects.map(t=>`<li><span class="ts">${fmt(t)}</span><span class="v-bad">не прошло</span></li>`).join("")
+    +(gAc!=null&&el>=gAc?`<li><span class="ts">${fmt(gAc)}</span><span class="v-ok">Accepted</span></li>`:"");
+  const uEvents=duel.subs.filter(s=>s.t<=el+120).map(s=>`<li><span class="ts">${fmt(s.t)}</span>${verdictCell(s)}</li>`).join("");
+  const gState=duel.status==="live"?(gAc!=null&&el>=gAc?"отправил решение":"решает"):(gAc!=null&&gAc<=duel.endSec?"решил":"не решил");
+  const uState=duel.status==="live"?(duel.pollErr?`<span class="v-bad">${esc(duel.pollErr)}</span>`:"посылки проверяются каждые 6 секунд"):(duel.status==="won"?"решил":"не решил");
+  const tagsHtml=duel.status==="live"?`<span class="tag">теги откроются после дуэли</span>`:p.tags.map(t=>`<span class="tag">${esc(t)}</span>`).join("");
+  let result="";
+  if(duel.status!=="live"){
+    const title={won:"Победа",lost:duel.gaveUp?"Сдался":"Поражение",draw:"Ничья: никто не решил"}[duel.status];
+    let reveal;
+    if(g.type==="ghost"){
+      const solvedLine=g.solveSec!=null?`Задачу он сдал на ${fmt(g.realAc)} от начала контеста. Предыдущий AC был на ${fmt(g.prevAc)}, поэтому его время на эту задачу считается как ${fmt(g.solveSec)}.`:`На контесте он эту задачу не решил.`;
+      reveal=`Это был <a href="https://codeforces.com/profile/${encodeURIComponent(g.handle)}" target="_blank" rel="noopener" class="${rc(g.rating)}">${esc(g.handle)}</a> с рейтингом ${g.rating} на ${esc(g.contestName)}, итоговое место ${g.rank}. ${solvedLine} Из ${g.field} участников его уровня в выборке задачу решили ${g.fieldSolved}.`;
+    }else{
+      reveal=`Играл синтетический соперник уровня ${g.rating}: ${esc(g.reason)}. Его время сгенерировано по разнице рейтинга задачи и соперника.`;
+    }
+    result=`<div class="result ${duel.status}"><h3>${title}</h3><p>${reveal}</p>
+      <div class="actions"><button class="btn primary" data-act="next">Следующая дуэль</button><button class="btn" data-act="close">Закрыть</button></div></div>`;
+  }
+  a.innerHTML=`
+    <div class="problem">
+      <div><div class="pid">${p.contestId}${esc(p.index)} · рейтинг ${p.rating}</div><h3>${esc(p.name)}</h3><div class="meta">${tagsHtml}</div></div>
+      <a class="btn" href="${url}" target="_blank" rel="noopener">Открыть задачу ↗</a>
+    </div>
+    <div class="clock"><span class="t" id="clockT">${fmt(el)}</span><span class="sub" id="clockS">${duel.waiting?"соперник сдал, жду вердикты твоих посылок":"из "+fmt(duel.limit)}</span><div class="bar"><i id="clockBar" style="width:${Math.min(100,el/duel.limit*100)}%"></i></div></div>
+    <div class="lanes">
+      <div class="lane you"><div class="who"><b>Ты</b><span class="handle">${esc(duel.handle)}</span></div><span class="state">${uState}</span><ul class="feed">${uEvents||`<li><span class="ts">—</span><span class="state">посылок пока нет</span></li>`}</ul></div>
+      <div class="lane gh"><div class="who"><b>Соперник</b><span class="rt" style="font-size:15px">${oppLabel(g)}</span></div><span class="state">${gState}</span><ul class="feed">${gEvents||`<li><span class="ts">—</span><span class="state">пишет код</span></li>`}</ul></div>
+    </div>
+    ${duel.status==="live"?`<div class="actions"><button class="btn" data-act="poll">Проверить посылки сейчас</button><button class="btn danger" data-act="surrender">Сдаться</button></div>`:result}`;
+}
+function renderClock(){
+  if(!duel||duel.status!=="live")return;
+  const el=elapsed(),t=$("#clockT");if(!t)return;
+  t.textContent=fmt(Math.min(el,duel.limit));
+  $("#clockBar").style.width=Math.min(100,el/duel.limit*100)+"%";
+  $("#clockS").textContent=duel.waiting?"соперник сдал, жду вердикты твоих посылок":"из "+fmt(duel.limit);
+}
+function renderHistory(){
+  const w=history.filter(h=>h.status==="won").length,l=history.filter(h=>h.status==="lost").length,d=history.filter(h=>h.status==="draw").length;
+  $("#record").innerHTML=history.length?`<i class="w">${w} W</i><i class="l">${l} L</i><i>${d} D</i>`:"";
+  if(!history.length){$("#histBody").innerHTML=`<p class="empty">Здесь появятся сыгранные дуэли: задача, результат и кто был призраком.</p>`;return}
+  const lab={won:'<span class="v-ok">победа</span>',lost:'<span class="v-bad">поражение</span>',draw:'<span class="state">ничья</span>'};
+  $("#histBody").innerHTML=`<div class="tbl"><table><thead><tr><th>Дата</th><th>Задача</th><th>Итог</th><th>Время</th><th>Соперник</th></tr></thead><tbody>${
+    history.slice(0,20).map(h=>`<tr><td>${new Date(h.at).toLocaleDateString("ru-RU",{day:"2-digit",month:"2-digit"})}</td>
+      <td class="p"><a href="https://codeforces.com/problemset/problem/${h.problem.contestId}/${encodeURIComponent(h.problem.index)}" target="_blank" rel="noopener">${h.problem.contestId}${esc(h.problem.index)}</a> ${esc(h.problem.name)} <span class="state">${h.problem.rating}</span></td>
+      <td>${lab[h.status]}${h.gaveUp?' <span class="state">(сдался)</span>':""}</td><td>${fmt(h.sec)}</td>
+      <td>${h.opp.handle?`<span class="${rc(h.opp.rating)}">${esc(h.opp.handle)}</span>`:`<span class="${rc(h.opp.rating)}">бот ${h.opp.rating}</span>`}</td></tr>`).join("")
+  }</tbody></table></div>`;
+}
+function render(){
+  $("#setup").hidden=!!duel;
+  renderArena();renderHistory();
+}
+
+document.addEventListener("click",e=>{
+  const chip=e.target.closest(".chip");
+  if(chip){const t=chip.dataset.tag;settings.tags=settings.tags.includes(t)?settings.tags.filter(x=>x!==t):[...settings.tags,t];saveSettings();renderTags();return}
+  if(e.target.id==="mode-all"||e.target.id==="mode-any"){settings.tagMode=e.target.id==="mode-all"?"all":"any";saveSettings();renderTags();return}
+  const act=e.target.closest("[data-act]");if(!act)return;
+  const a=act.dataset.act;
+  if(a==="start")startDuel();
+  else if(a==="close")closeDuel();
+  else if(a==="next"){closeDuel();search()}
+  else if(a==="poll")poll();
+  else if(a==="surrender")surrender();
+});
+$("#go").addEventListener("click",search);
+$("#bot").addEventListener("input",e=>{e.target.className=rc(+e.target.value)});
+$("#handle").addEventListener("keydown",e=>{if(e.key==="Enter")search()});
+
+setInterval(()=>{
+  if(!duel||duel.status!=="live")return;
+  const before=duel.waiting;
+  resolveDuel();
+  if(!duel||duel.status!=="live")return;
+  const gAc=ghostAc(),el=elapsed();
+  const ghostJustActed=duel.ghost.rejects.some(t=>t<=el&&t>el-0.6)||(gAc!=null&&gAc<=el&&gAc>el-0.6);
+  if(ghostJustActed||before!==duel.waiting)renderArena();else renderClock();
+  const gap=duel.waiting?3000:6000;
+  if(!polling&&Date.now()-lastPollTry>gap)poll();
+},500);
+
+fillForm();render();
+</script>
+</body>
+</html>
