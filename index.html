@@ -94,6 +94,11 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
 .hint{font-size:13px;color:var(--muted);margin:0;max-width:72ch}
 .ferr{font-size:13px;color:var(--bad);margin:0}
 .ferr:empty{display:none}
+.fnote{font-size:13px;color:var(--muted);margin:0}
+.fnote:empty{display:none}
+.fnote b{font-weight:800}
+.linkbtn{border:0;background:none;padding:0;color:var(--you);font:inherit;font-weight:600;cursor:pointer}
+.linkbtn:hover{text-decoration:underline}
 .field input[aria-invalid="true"],.stepper:has(input[aria-invalid="true"]){border-color:var(--bad)}
 .field input[aria-invalid="true"]:focus,.stepper:has(input[aria-invalid="true"]):focus-within{box-shadow:0 0 0 4px color-mix(in srgb,var(--bad) 15%,transparent)}
 
@@ -219,7 +224,7 @@ td.p a:hover{text-decoration:underline}
       <div class="field"><label for="rmin" data-i18n="probRating"></label>
         <div class="range"><input id="rmin" class="num" type="text" inputmode="numeric" maxlength="4" autocomplete="off" min="800" max="3500" data-i18n-aria="ratingFrom"><span>—</span><input id="rmax" class="num" type="text" inputmode="numeric" maxlength="4" autocomplete="off" min="800" max="3500" data-i18n-aria="ratingTo"></div><p class="ferr" id="errRating" role="alert"></p></div>
       <div class="field"><label for="bot" data-i18n="oppLevel"></label>
-        <div class="stepper"><button type="button" data-step="-50" data-i18n-aria="dec50">−</button><input id="bot" class="num" type="text" inputmode="numeric" maxlength="4" autocomplete="off" min="400" max="3800"><button type="button" data-step="50" data-i18n-aria="inc50">+</button></div><p class="ferr" id="errBot" role="alert"></p></div>
+        <div class="stepper"><button type="button" data-step="-50" data-i18n-aria="dec50">−</button><input id="bot" class="num" type="text" inputmode="numeric" maxlength="4" autocomplete="off" min="400" max="3800"><button type="button" data-step="50" data-i18n-aria="inc50">+</button></div><p class="ferr" id="errBot" role="alert"></p><p class="fnote" id="myRating"></p></div>
     </div>
     <div class="field"><span class="lbl" id="limit-lbl" data-i18n="limitLbl"></span>
       <div class="seg wide" id="limit" role="group" aria-labelledby="limit-lbl"><button type="button" data-limit="5">5</button><button type="button" data-limit="10">10</button><button type="button" data-limit="15">15</button><button type="button" data-limit="30">30</button><button type="button" data-limit="45">45</button><button type="button" data-limit="60">60</button><button type="button" data-limit="90">90</button><button type="button" data-limit="120">120</button></div></div>
@@ -254,6 +259,7 @@ const I18N={
     tags:"Теги",tagModeAria:"Как совмещать теги",modeAll:"все сразу",modeAny:"любой из",find:"Найти соперника",
     setupHint:"Соперник — запись реального участника того контеста, откуда задача, с рейтингом около выбранного уровня. Его попытки и время решения воспроизводятся по таблице результатов. Если у контеста нет рейтинговых данных, играет синтетический соперник.",
     history:"История",
+    myRating:"Твой рейтинг",useRating:"поставить",
     errRatingRange:"Рейтинг задачи — число от 800 до 3500",errRatingOrder:"Нижняя граница не может быть больше верхней",errBotRange:"Уровень соперника — число от 400 до 3800",
     needHandle:"Введи свой хэндл на Codeforces",loadingProblems:"Загружаю задачи Codeforces",loadingSolved:"Смотрю, что ты уже решил",
     noProblems:"Под эти фильтры нет нерешённых задач. Расширь диапазон или убери теги.",searching:"Ищу соперника среди участников контеста",
@@ -284,6 +290,7 @@ const I18N={
     tags:"Tags",tagModeAria:"How to combine tags",modeAll:"all of",modeAny:"any of",find:"Find opponent",
     setupHint:"Your opponent is a recording of a real contestant from the contest the problem comes from, rated close to the level you chose. Their attempts and solve time are replayed from the contest standings. If the contest has no rating data, a synthetic opponent plays instead.",
     history:"History",
+    myRating:"Your rating",useRating:"use it",
     errRatingRange:"Problem rating must be a number from 800 to 3500",errRatingOrder:"The lower bound can't be above the upper bound",errBotRange:"Opponent level must be a number from 400 to 3800",
     needHandle:"Enter your Codeforces handle",loadingProblems:"Loading Codeforces problems",loadingSolved:"Checking what you have already solved",
     noProblems:"No unsolved problems match these filters. Widen the rating range or remove some tags.",searching:"Looking for an opponent among the contestants",
@@ -445,7 +452,7 @@ function fillForm(){
   $("#handle").value=settings.handle;$("#rmin").value=settings.rmin;$("#rmax").value=settings.rmax;
   $("#bot").value=settings.bot;$("#adaptive").checked=settings.adaptive;
   $("#bot").className=rc(settings.bot);
-  renderLimit();renderTags();
+  renderLimit();renderTags();renderMyRating();
 }
 function renderLimit(){
   document.querySelectorAll("[data-limit]").forEach(b=>b.setAttribute("aria-pressed",+b.dataset.limit===settings.limit));
@@ -456,6 +463,33 @@ function renderTags(){
   $("#mode-any").setAttribute("aria-pressed",settings.tagMode==="any");
 }
 
+// Рейтинг пользователя из user.info. Уровень соперника ставится равным ему только для нового хэндла,
+// чтобы не перетирать ручные правки и адаптивный режим
+const clampBot=r=>Math.min(3800,Math.max(400,r));
+let ratingSync=null;
+function syncRating(){
+  const h=$("#handle").value.trim();
+  if(!h)return Promise.resolve();
+  if(ratingSync&&ratingSync.h===h)return ratingSync.p;
+  const p=(async()=>{
+    try{
+      const [u]=await cf("user.info",{handles:h});
+      if($("#handle").value.trim()!==h)return;
+      const fresh=settings.ratingFor!==h.toLowerCase();
+      settings.handle=h;settings.ratingFor=h.toLowerCase();settings.myRating=u.rating||null;
+      if(fresh&&u.rating){settings.bot=clampBot(u.rating);$("#bot").value=settings.bot;$("#bot").className=rc(settings.bot);validate(false)}
+      saveSettings();renderMyRating();
+    }catch(e){}
+    finally{if(ratingSync&&ratingSync.p===p)ratingSync=null}
+  })();
+  ratingSync={h,p};
+  return p;
+}
+function renderMyRating(){
+  const r=settings.myRating,el=$("#myRating");
+  if(!r||settings.ratingFor!==$("#handle").value.trim().toLowerCase()){el.innerHTML="";return}
+  el.innerHTML=`${tr("myRating")}: <b class="${rc(r)}">${r}</b>`+(+$("#bot").value!==clampBot(r)?` · <button type="button" class="linkbtn" data-act="useRating">${tr("useRating")}</button>`:"");
+}
 // show=false: только блокируем кнопку и обновляем уже показанные ошибки; show=true: показываем ошибки
 function validate(show){
   const val=id=>{const v=$(id).value;return /^\d+$/.test(v)?+v:NaN};
@@ -478,10 +512,12 @@ function validate(show){
 async function search(){
   if(busy)return;
   if(!validate(true))return;
-  readForm();
-  if(!settings.handle){log(tr("needHandle"),true);$("#handle").focus();return}
+  const h=$("#handle").value.trim();
+  if(!h){log(tr("needHandle"),true);$("#handle").focus();return}
   busy=true;$("#go").disabled=true;
   try{
+    if(settings.ratingFor!==h.toLowerCase())await syncRating();
+    readForm();
     log(tr("loadingProblems"));
     const probs=await loadProblems();
     log(tr("loadingSolved"));
@@ -640,7 +676,7 @@ document.addEventListener("click",e=>{
   if(chip){const t=chip.dataset.tag;settings.tags=settings.tags.includes(t)?settings.tags.filter(x=>x!==t):[...settings.tags,t];saveSettings();renderTags();return}
   if(e.target.id==="mode-all"||e.target.id==="mode-any"){settings.tagMode=e.target.id==="mode-all"?"all":"any";saveSettings();renderTags();return}
   const lb=e.target.closest("[data-lang]");
-  if(lb){settings.lang=lb.dataset.lang;saveSettings();applyLang();renderTags();validate(false);log("");render();return}
+  if(lb){settings.lang=lb.dataset.lang;saveSettings();applyLang();renderTags();renderMyRating();validate(false);log("");render();return}
   const lim=e.target.closest("[data-limit]");
   if(lim){settings.limit=+lim.dataset.limit;saveSettings();renderLimit();return}
   const step=e.target.closest("[data-step]");
@@ -652,6 +688,7 @@ document.addEventListener("click",e=>{
   else if(a==="next"){closeDuel();search()}
   else if(a==="poll")poll();
   else if(a==="surrender")surrender();
+  else if(a==="useRating"){$("#bot").value=clampBot(settings.myRating);$("#bot").dispatchEvent(new Event("input"))}
 });
 $("#go").addEventListener("click",search);
 document.querySelectorAll("input.num").forEach(el=>{
@@ -659,11 +696,13 @@ document.querySelectorAll("input.num").forEach(el=>{
   el.addEventListener("input",()=>{
     const v=el.value,clean=v.replace(/\D/g,"").slice(0,4);
     if(v!==clean){const pos=Math.max(0,(el.selectionStart||0)-(v.length-clean.length));el.value=clean;el.setSelectionRange(pos,pos)}
-    validate(false);
+    if(validate(false))readForm();
   });
   el.addEventListener("blur",()=>validate(true));
 });
-$("#bot").addEventListener("input",e=>{e.target.className=rc(+e.target.value)});
+$("#bot").addEventListener("input",e=>{e.target.className=rc(+e.target.value);renderMyRating()});
+$("#handle").addEventListener("change",syncRating);
+$("#handle").addEventListener("input",renderMyRating);
 $("#handle").addEventListener("keydown",e=>{if(e.key==="Enter")search()});
 
 setInterval(()=>{
@@ -678,7 +717,7 @@ setInterval(()=>{
   if(!polling&&Date.now()-lastPollTry>gap)poll();
 },500);
 
-applyLang();fillForm();validate(true);render();
+applyLang();fillForm();validate(true);render();syncRating();
 </script>
 </body>
 </html>
